@@ -1,20 +1,22 @@
 "use client";
-import { createContext, useCallback, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { playMusic, preloadMusic, setMusicVolume, sfx, Track, unlockAudio } from "@/lib/client/audio";
-import { levelInfo, useStore } from "@/lib/client/store";
+import { getState, levelInfo, needsUsername, useStore } from "@/lib/client/store";
 import { Board } from "./board";
+import { DeviceScreen } from "./device";
 import { Facts } from "./facts";
 import { Home } from "./home";
 import { Hunt } from "./hunt";
 import { SettingsSheet } from "./settings";
 import { Sky } from "./sky";
 import { Splash } from "./splash";
+import { UsernameScreen } from "./username";
 import { CloudTransition, TransitionHandle } from "./transition";
 import { confetti, toast, Toaster } from "./ui";
 
-export type Screen = "splash" | "home" | "facts" | "hunt" | "board";
+export type Screen = "splash" | "device" | "username" | "home" | "facts" | "hunt" | "board";
 
-const TRACK: Record<Screen, Track | null> = { splash: null, home: "home", facts: "facts", hunt: "hunt", board: "board" };
+const TRACK: Record<Screen, Track | null> = { splash: null, device: "home", username: "home", home: "home", facts: "facts", hunt: "hunt", board: "board" };
 
 type Nav = { go: (s: Screen) => void; openSettings: () => void; screen: Screen };
 const NavCtx = createContext<Nav>({ go: () => {}, openSettings: () => {}, screen: "splash" });
@@ -39,9 +41,24 @@ export default function App() {
     apply();
     root.dataset.text = settings.textSize;
     root.dataset.reduceMotion = String(settings.reduceMotion);
+    root.dataset.contrast = String(settings.contrast);
+    root.dataset.device = settings.device || "phone";
     mq.addEventListener("change", apply);
     return () => mq.removeEventListener("change", apply);
-  }, [settings.theme, settings.textSize, settings.reduceMotion]);
+  }, [settings.theme, settings.textSize, settings.reduceMotion, settings.contrast, settings.device]);
+
+  const online = useSyncExternalStore(
+    (cb) => {
+      window.addEventListener("online", cb);
+      window.addEventListener("offline", cb);
+      return () => {
+        window.removeEventListener("online", cb);
+        window.removeEventListener("offline", cb);
+      };
+    },
+    () => navigator.onLine,
+    () => true,
+  );
 
   useEffect(() => setMusicVolume(settings.music), [settings.music]);
 
@@ -79,15 +96,18 @@ export default function App() {
   const start = () => {
     unlockAudio();
     preloadMusic();
-    go("home");
+    go(!getState().settings.device ? "device" : needsUsername() ? "username" : "home");
   };
 
   return (
     <NavCtx.Provider value={{ go, openSettings: () => setSettingsOpen(true), screen }}>
       <div className="app-root">
         <Sky clouds={screen !== "board"} />
-        <div className="absolute inset-0" style={{ padding: "inherit" }}>
+        {/* on a computer the app is a centered column; no transform, so fixed sheets still cover the screen */}
+        <div className={`absolute inset-y-0 inset-x-0 mx-auto w-full ${settings.device === "desktop" ? "max-w-[900px]" : ""}`} style={{ padding: "inherit" }}>
           {screen === "splash" && <Splash onStart={start} />}
+          {screen === "device" && <DeviceScreen />}
+          {screen === "username" && <UsernameScreen />}
           {screen === "home" && <Home />}
           {screen === "facts" && <Facts />}
           {screen === "hunt" && <Hunt />}
@@ -95,6 +115,11 @@ export default function App() {
         </div>
       </div>
       <SettingsSheet open={settingsOpen} onClose={() => setSettingsOpen(false)} />
+      {!online && screen !== "splash" && (
+        <div role="status" className="card pointer-events-none fixed inset-x-4 top-3 z-[85] mx-auto max-w-sm px-4 py-2 text-center text-sm font-bold" style={{ marginTop: "env(safe-area-inset-top)" }}>
+          Offline. Facts and Hunt need internet. Your board still works.
+        </div>
+      )}
       <Toaster />
       <CloudTransition ref={tr} />
     </NavCtx.Provider>

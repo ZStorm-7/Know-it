@@ -1,11 +1,12 @@
 "use client";
 import gsap from "gsap";
-import { Camera, Search, Settings } from "lucide-react";
+import { Camera, Flame, Search, Settings, StickyNote } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/client/api";
-import { levelInfo, useStore } from "@/lib/client/store";
+import { levelInfo, liveStreak, useStore } from "@/lib/client/store";
 import { useNav } from "./app";
-import { BrainIcon, Nimbus, Pushpin } from "./art";
+import { BrainIcon, Nimbus } from "./art";
+import { CollectionSheet } from "./collection";
 import { Logo } from "./logo";
 import { Btn, IconBtn } from "./ui";
 
@@ -26,6 +27,10 @@ export function Home() {
   const { go, openSettings } = useNav();
   const xp = useStore((s) => s.xp);
   const lvl = levelInfo(xp);
+  const streakData = useStore((s) => s.streak);
+  const streak = liveStreak(streakData);
+  const [collectionOpen, setCollectionOpen] = useState(false);
+  const desktop = useStore((s) => s.settings.device) === "desktop";
   const [compliment, setCompliment] = useState<string | null>(cachedCompliment);
   const root = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLParagraphElement>(null);
@@ -70,7 +75,7 @@ export function Home() {
     <div ref={root} className="relative flex h-full flex-col px-5" style={{ paddingTop: "max(14px, 2dvh)", paddingBottom: "max(12px, 1.5dvh)" }}>
       {/* top bar */}
       <div data-in className="flex items-center gap-3">
-        <div className="glass flex min-w-0 flex-1 items-center gap-2 rounded-2xl px-3 py-2">
+        <button aria-label="Open your collection" onClick={() => setCollectionOpen(true)} className="glass flex min-w-0 flex-1 items-center gap-2 rounded-2xl px-3 py-2 text-left active:scale-[0.98]">
           <BrainIcon size={30} />
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline justify-between gap-2 text-sm font-extrabold">
@@ -81,6 +86,10 @@ export function Home() {
               <div className="h-full rounded-full bg-[var(--sun)] transition-[width] duration-700" style={{ width: `${Math.max(6, lvl.progress * 100)}%` }} />
             </div>
           </div>
+        </button>
+        <div aria-label={`${streak} day streak`} className={`glass flex h-[52px] shrink-0 items-center gap-1 rounded-2xl px-3 font-extrabold ${streak ? "" : "opacity-70"}`}>
+          <Flame size={22} strokeWidth={2.6} color={streak ? "#fb923c" : "currentColor"} fill={streak ? "#fb923c" : "none"} />
+          {streak}
         </div>
         <IconBtn label="Settings" onClick={openSettings}>
           <Settings size={22} strokeWidth={2.6} />
@@ -89,7 +98,7 @@ export function Home() {
 
       {/* logo + motto */}
       <div data-in className="flex flex-col items-center" style={{ marginTop: "clamp(8px, 3dvh, 32px)" }}>
-        <Logo />
+        <Logo size={desktop ? "clamp(4.4rem, 8vw, 6.4rem)" : undefined} />
         <p className="mt-3 text-center text-[clamp(0.95rem,4vw,1.15rem)] font-bold opacity-95">Learn something extraordinary about the ordinary.</p>
         <p className="glass mt-2 rounded-full px-3 py-1 text-center text-[clamp(0.72rem,3.2vw,0.85rem)] font-bold">Swap your next scroll for a snap.</p>
       </div>
@@ -99,7 +108,7 @@ export function Home() {
         <div className="flex w-full max-w-md items-start gap-3">
           <div className="flex shrink-0 flex-col items-center pt-1" style={{ width: "clamp(112px, 33vw, 150px)" }}>
             <Nimbus size={140} className="bob max-w-full" />
-            <span className="mt-0.5 text-xs font-extrabold opacity-90">Nimbus</span>
+            <span className="font-display mt-0.5 text-xl leading-none">Nimbus</span>
           </div>
           <div className="bubble bubble-left min-w-0 flex-1 px-4 py-3.5" style={{ minHeight: "4.4rem" }}>
             {compliment ? (
@@ -121,26 +130,41 @@ export function Home() {
         </div>
       </div>
 
-      {/* main buttons */}
-      <div className="mx-auto flex w-full max-w-md flex-col" style={{ gap: "clamp(10px, 1.8dvh, 18px)" }}>
+      {/* main buttons: stacked on a phone, three tall tiles in a row on a computer */}
+      <div className={desktop ? "mx-auto grid w-full max-w-3xl grid-cols-3 gap-4" : "mx-auto flex w-full max-w-md flex-col"} style={desktop ? undefined : { gap: "clamp(10px, 1.8dvh, 18px)" }}>
         <div data-in>
-          <Btn variant="sun" className="text-[clamp(1.35rem,6vw,1.75rem)]" style={{ height: "clamp(66px, 10.2dvh, 92px)" }} onClick={() => go("facts")}>
-            <Camera size={28} strokeWidth={2.8} /> Facts
+          <Btn
+            variant="sun"
+            className={desktop ? "flex-col !gap-3 text-[1.7rem]" : "text-[clamp(1.35rem,6vw,1.75rem)]"}
+            style={{ height: desktop ? "clamp(120px, 19dvh, 170px)" : "clamp(66px, 10.2dvh, 92px)" }}
+            onClick={() => go("facts")}
+          >
+            <Camera size={desktop ? 44 : 28} strokeWidth={2.8} /> Facts
           </Btn>
         </div>
         <div data-in>
-          <Btn className="text-[clamp(1.35rem,6vw,1.75rem)]" style={{ height: "clamp(66px, 10.2dvh, 92px)" }} onClick={() => go("hunt")}>
-            <Search size={28} strokeWidth={2.8} /> Hunt Mode
+          <Btn
+            className={desktop ? "flex-col !gap-3 text-[1.7rem]" : "text-[clamp(1.35rem,6vw,1.75rem)]"}
+            style={{ height: desktop ? "clamp(120px, 19dvh, 170px)" : "clamp(66px, 10.2dvh, 92px)" }}
+            onClick={() => go("hunt")}
+          >
+            <Search size={desktop ? 44 : 28} strokeWidth={2.8} /> Hunt
           </Btn>
         </div>
         <div data-in>
-          <Btn variant="violet" className="text-[clamp(1.2rem,5.2vw,1.5rem)]" style={{ height: "clamp(58px, 8.4dvh, 76px)" }} onClick={() => go("board")}>
-            <Pushpin size={22} /> Bulletin Board
+          <Btn
+            variant="violet"
+            className={desktop ? "flex-col !gap-3 text-[1.7rem]" : "text-[clamp(1.2rem,5.2vw,1.5rem)]"}
+            style={{ height: desktop ? "clamp(120px, 19dvh, 170px)" : "clamp(58px, 8.4dvh, 76px)" }}
+            onClick={() => go("board")}
+          >
+            <StickyNote size={desktop ? 44 : 28} strokeWidth={2.8} /> Bulletin Board
           </Btn>
         </div>
       </div>
 
       <div data-in className="mt-3 text-center text-[0.72rem] font-bold opacity-80">Built with Claude Code · AI by Gemini</div>
+      <CollectionSheet open={collectionOpen} onClose={() => setCollectionOpen(false)} />
     </div>
   );
 }

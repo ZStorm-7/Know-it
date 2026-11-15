@@ -59,23 +59,38 @@ export async function geminiJSON<T>(opts: {
     content.push({ type: "image_url", image_url: { url: opts.imageDataUrl } });
   }
 
-  const res = await fetch(ENDPOINT, {
-    method: "POST",
-    signal: opts.signal,
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${key}`,
-    },
-    body: JSON.stringify({
-      model: opts.model,
-      temperature: opts.temperature ?? 0.7,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: opts.system },
-        { role: "user", content },
-      ],
-    }),
+  const body = JSON.stringify({
+    model: opts.model,
+    temperature: opts.temperature ?? 0.7,
+    response_format: { type: "json_object" },
+    messages: [
+      { role: "system", content: opts.system },
+      { role: "user", content },
+    ],
   });
+  const call = () =>
+    fetch(ENDPOINT, {
+      method: "POST",
+      signal: opts.signal,
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${key}` },
+      body,
+    });
+
+  // Retry short outages (busy, server errors, dropped connections) up to 2 times.
+  // Never retry bad keys or empty credits: those will not fix themselves.
+  let res: Response | null = null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      res = await call();
+      if (![429, 500, 502, 503, 504].includes(res.status) || attempt === 2) break;
+      const text = await res.clone().text().catch(() => "");
+      if (/credits|billing|api key/i.test(text)) break;
+    } catch (e) {
+      if ((e as Error)?.name === "AbortError" || attempt === 2) throw e;
+    }
+    await new Promise((r) => setTimeout(r, 700 * (attempt + 1)));
+  }
+  if (!res) throw new GeminiError("no response", 502, "The AI service had a hiccup. Please try again.");
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
@@ -109,6 +124,14 @@ export function checkImage(dataUrl: unknown): string {
   }
   if (dataUrl.length > 3_500_000) throw new GeminiError("Photo is too large", 413, "That photo is too big. Try another one.");
   return dataUrl;
+}
+
+export const LANGUAGES = ["English", "Spanish", "French", "German", "Portuguese", "Hindi", "Tamil", "Telugu", "Chinese (Simplified)", "Japanese", "Korean", "Arabic"];
+
+/** One prompt line asking for answers in the user's language (English if unknown). */
+export function languageLine(lang: unknown): string {
+  const l = LANGUAGES.includes(String(lang)) ? String(lang) : "English";
+  return l === "English" ? "" : `Write every text value in ${l}. Keep JSON keys in English.`;
 }
 
 export type Box = [number, number, number, number]; // ymin, xmin, ymax, xmax (0-1000)

@@ -1,7 +1,9 @@
 "use client";
-import { ReactNode, useState } from "react";
+import { ReactNode, useRef, useState } from "react";
+import { LANGUAGES } from "@/lib/client/languages";
 import { sfx } from "@/lib/client/audio";
-import { resetProgress, setSetting, Settings, update, useStore } from "@/lib/client/store";
+import { exportBackup, importBackup, resetProgress, setSetting, Settings, update, useStore } from "@/lib/client/store";
+import { useNav } from "./app";
 import { Btn, Sheet, toast } from "./ui";
 
 function Row({ label, sub, children }: { label: string; sub?: string; children: ReactNode }) {
@@ -52,7 +54,31 @@ function Seg<T extends string>({ value, options, onChange }: { value: T; options
 
 export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const s = useStore((st) => st.settings);
+  const profile = useStore((st) => st.profile);
+  const { go } = useNav();
   const [confirmReset, setConfirmReset] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const backup = async () => {
+    const blob = await exportBackup();
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `know-it-backup-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast("Backup saved to your downloads");
+  };
+  const restore = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files?.[0];
+    e.target.value = "";
+    if (!f) return;
+    try {
+      const n = await importBackup(f);
+      toast(`Restored ${n} ${n === 1 ? "note" : "notes"}`);
+    } catch (err) {
+      toast(err instanceof Error ? err.message : "Couldn't read that file");
+    }
+  };
   const set = <K extends keyof Settings>(k: K) => (v: Settings[K]) => setSetting(k, v);
 
   return (
@@ -88,6 +114,39 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
           <Row label="Text size">
             <Seg value={s.textSize} options={[["s", "S"], ["m", "M"], ["l", "L"]]} onChange={set("textSize")} />
           </Row>
+          <Row label="Username" sub={profile ? "Shown on the Hunt leaderboard" : "Join the Hunt leaderboard"}>
+            {profile ? (
+              <span className="font-extrabold">{profile.name}</span>
+            ) : (
+              <button
+                className="rounded-xl border-[2.5px] border-[var(--ink)] bg-[var(--sun)] px-3 py-1.5 font-extrabold text-[var(--ink)]"
+                onClick={() => {
+                  onClose();
+                  go("username");
+                }}
+              >
+                Choose one
+              </button>
+            )}
+          </Row>
+          <Row label="Device" sub="Reshapes the buttons">
+            <Seg value={s.device || "phone"} options={[["phone", "Phone"], ["desktop", "Computer"]]} onChange={set("device")} />
+          </Row>
+          <Row label="Language" sub="For facts, Hunt and compliments">
+            <select
+              value={s.language}
+              onChange={(e) => setSetting("language", e.target.value)}
+              aria-label="Language"
+              className="max-w-[10.5rem] rounded-xl border-[2.5px] border-[var(--ink)] bg-white px-2 py-1.5 font-bold text-[var(--ink)]"
+            >
+              {LANGUAGES.map((l) => (
+                <option key={l}>{l}</option>
+              ))}
+            </select>
+          </Row>
+          <Row label="High contrast" sub="Stronger borders and text">
+            <Toggle on={s.contrast} onChange={set("contrast")} label="High contrast" />
+          </Row>
           <Row label="Fact style">
             <Seg value={s.factStyle} options={[["kid", "Kid"], ["normal", "Normal"], ["nerdy", "Nerdy"]]} onChange={set("factStyle")} />
           </Row>
@@ -97,6 +156,13 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
         </div>
 
         <div className="mt-4 flex flex-col gap-3">
+          <Btn variant="white" className="h-14" onClick={backup}>
+            Save a backup
+          </Btn>
+          <Btn variant="white" className="h-14" onClick={() => fileRef.current?.click()}>
+            Restore a backup
+          </Btn>
+          <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={restore} />
           <Btn
             variant="white"
             className="h-14"
@@ -127,7 +193,7 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
 
         <div className="mt-6 rounded-2xl bg-slate-100 p-4 text-xs leading-relaxed text-[var(--ink-soft)] dark:bg-white/5">
           <div className="mb-1 font-extrabold text-[var(--card-ink)]">Credits</div>
-          Built with Claude Code · AI by Gemini (facts can be wrong).
+          Know it · Built with Claude Code · AI by Gemini (facts can be wrong).
           <br />
           Music via Storyblocks (Via Portugal, Joyful Ride, Comedy Background Detective, Fresh Story).
           <br />

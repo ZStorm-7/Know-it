@@ -181,3 +181,49 @@ export function clampTitle(t: string): string {
   const sp = cut.lastIndexOf(" ");
   return (sp > 8 ? cut.slice(0, sp) : cut).trim();
 }
+
+/** Sticky-note color index (into NOTE_COLORS) for each object category. */
+const CATEGORY_COLOR: Record<string, number> = { kitchen: 4, clothing: 1, nature: 2, tech: 3, toys: 0, stationery: 0, furniture: 4 };
+export function categoryColor(category?: string): number {
+  return category && category in CATEGORY_COLOR ? CATEGORY_COLOR[category] : Math.floor(Math.random() * NOTE_COLORS.length);
+}
+
+/** Gold crown for 1st, silver medal for 2nd, bronze medal for 3rd, a numbered circle after that. */
+export function RankBadge({ rank, size = 36 }: { rank: number; size?: number }) {
+  if (rank === 1) {
+    return (
+      <svg width={size} height={size} viewBox="0 0 48 48" aria-label="First place" role="img">
+        <path d="M6 36 L4 14 L15 24 L24 8 L33 24 L44 14 L42 36 Z" fill="#fbbf24" stroke="#92400e" strokeWidth="2.6" strokeLinejoin="round" />
+        <rect x="6" y="36" width="36" height="7" rx="2.5" fill="#f59e0b" stroke="#92400e" strokeWidth="2.6" />
+        <circle cx="24" cy="21" r="3.2" fill="#ef4444" stroke="#92400e" strokeWidth="1.6" />
+        <path d="M12 30 L15 24 M36 30 L33 24" stroke="#fff" strokeWidth="2" strokeLinecap="round" opacity="0.7" />
+      </svg>
+    );
+  }
+  if (rank === 2 || rank === 3) {
+    const silver = rank === 2;
+    const main = silver ? "#cbd5e1" : "#d97706";
+    const dark = silver ? "#475569" : "#78350f";
+    const ribbon = silver ? "#60a5fa" : "#f87171";
+    return (
+      <svg width={size} height={size} viewBox="0 0 48 48" aria-label={silver ? "Second place" : "Third place"} role="img">
+        <path d="M13 3 L21 20 L27 17 L19 3 Z" fill={ribbon} stroke={dark} strokeWidth="2" strokeLinejoin="round" />
+        <path d="M35 3 L27 20 L21 17 L29 3 Z" fill={ribbon} stroke={dark} strokeWidth="2" strokeLinejoin="round" opacity="0.9" />
+        <circle cx="24" cy="30" r="14" fill={main} stroke={dark} strokeWidth="2.6" />
+        <circle cx="24" cy="30" r="9" fill="none" stroke={dark} strokeWidth="1.8" opacity="0.55" />
+        <text x="24" y="35.5" textAnchor="middle" fontSize="15" fontWeight="800" fill={dark} fontFamily="var(--font-shrikhand), cursive">
+          {rank}
+        </text>
+      </svg>
+    );
+  }
+  return (
+    <span
+      className="font-display grid shrink-0 place-items-center rounded-full border-[2.5px] border-[var(--ink)] bg-white text-[var(--ink)]"
+      style={{ width: size - 4, height: size - 4, fontSize: size * 0.42 }}
+      aria-label={`Rank ${rank}`}
+    >
+      {rank}
+    </span>
+  );
+}

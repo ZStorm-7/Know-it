@@ -13,6 +13,11 @@ export type Settings = {
   textSize: "s" | "m" | "l";
   factStyle: "kid" | "normal" | "nerdy";
   huntStart: "easy" | "normal";
+  language: string;
+  contrast: boolean;
+  huntPick: boolean;
+  /** "" until the player picks Phone or Computer on first launch. */
+  device: "" | "phone" | "desktop";
 };
 
 export type Note = {
@@ -21,6 +26,7 @@ export type Note = {
   /** The AI's original name, so a renamed note can be reverted. */
   suggested?: string;
   object: string;
+  category?: string;
   x: number;
   y: number;
   rot: number;
@@ -46,6 +52,12 @@ export type State = {
   settings: Settings;
   notes: Note[];
   seenFacts: Record<string, string[]>;
+  streak: { count: number; best: number; last: string };
+  /** Leaderboard account. token proves the name is yours. */
+  profile: { name: string; token: string } | null;
+  /** True if the player chose to skip the username step. */
+  guest: boolean;
+  leaderboard: { name: string; score: number; at: number }[];
 };
 
 const KEY = "knowit:v1";
@@ -59,6 +71,10 @@ export const DEFAULT_SETTINGS: Settings = {
   textSize: "m",
   factStyle: "normal",
   huntStart: "easy",
+  language: "English",
+  contrast: false,
+  huntPick: false,
+  device: "",
 };
 
 const DEFAULT: State = {
@@ -70,6 +86,10 @@ const DEFAULT: State = {
   settings: DEFAULT_SETTINGS,
   notes: [],
   seenFacts: {},
+  streak: { count: 0, best: 0, last: "" },
+  profile: null,
+  guest: false,
+  leaderboard: [],
 };
 
 let state: State = DEFAULT;
@@ -169,7 +189,7 @@ export function rememberFacts(key: string, facts: string[]) {
 // ---------- Notes (metadata in localStorage, photos in IndexedDB) ----------
 export const NOTE_COLOR_COUNT = 5;
 
-export async function addNote(title: string, detail: NoteDetail, color?: number): Promise<Note> {
+export async function addNote(title: string, detail: NoteDetail, color?: number, category?: string): Promise<Note> {
   const id = Math.random().toString(36).slice(2, 10);
   const { notes } = getState();
   const i = notes.length;
@@ -180,6 +200,7 @@ export async function addNote(title: string, detail: NoteDetail, color?: number)
     title,
     suggested: title,
     object: detail.object,
+    category,
     x: col * 215 + (Math.random() * 24 - 12),
     y: row * 235 + (Math.random() * 24 - 12),
     rot: Math.random() * 10 - 5,
@@ -212,4 +233,74 @@ export function restoreNote(note: Note) {
 
 export function purgeNoteDetail(id: string) {
   del(`note:${id}`).catch(() => {});
+}
+
+// ---------- Streaks ----------
+// A streak counts days in a row with at least one Facts snap or Hunt find, by the phone's local date.
+function dayKey(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+/** Records activity today. Returns the new streak count if it went up, otherwise null. */
+export function recordActivity(): number | null {
+  const today = dayKey(new Date());
+  const y = new Date();
+  y.setDate(y.getDate() - 1);
+  const yesterday = dayKey(y);
+  const cur = getState().streak;
+  if (cur.last === today) return null;
+  const count = cur.last === yesterday ? cur.count + 1 : 1;
+  update((s) => ({ ...s, streak: { count, best: Math.max(s.streak.best, count), last: today } }));
+  return count;
+}
+
+/** The streak to show: it resets to 0 once a whole day is missed. */
+export function liveStreak(st: State["streak"]): number {
+  const y = new Date();
+  y.setDate(y.getDate() - 1);
+  return st.last === dayKey(new Date()) || st.last === dayKey(y) ? st.count : 0;
+}
+
+// ---------- Room leaderboard (on this device, pass the phone) ----------
+export function addLeader(name: string, score: number) {
+  const entry = { name: name.trim().slice(0, 16) || "Player", score, at: Date.now() };
+  update((s) => ({
+    ...s,
+    leaderboard: [...s.leaderboard, entry].sort((a, b) => b.score - a.score || a.at - b.at).slice(0, 10),
+  }));
+}
+
+// ---------- Backup and restore ----------
+export async function exportBackup(): Promise<Blob> {
+  const st = getState();
+  const details: Record<string, NoteDetail> = {};
+  for (const n of st.notes) {
+    const d = await getNoteDetail(n.id).catch(() => undefined);
+    if (d) details[n.id] = d;
+  }
+  return new Blob([JSON.stringify({ app: "curio", version: 1, savedAt: new Date().toISOString(), state: st, details })], {
+    type: "application/json",
+  });
+}
+
+export async function importBackup(file: File): Promise<number> {
+  const data = JSON.parse(await file.text());
+  if (data?.app !== "curio" || !data.state || !Array.isArray(data.state.notes)) throw new Error("This is not a Curio backup file.");
+  for (const [id, d] of Object.entries(data.details ?? {})) await set(`note:${id}`, d);
+  const incoming = data.state as State;
+  update(() => ({ ...DEFAULT, ...incoming, settings: { ...DEFAULT_SETTINGS, ...incoming.settings } }));
+  return incoming.notes.length;
+}
+
+// ---------- Leaderboard account ----------
+export function setProfile(p: { name: string; token: string } | null) {
+  update((s) => ({ ...s, profile: p, guest: p ? false : s.guest }));
+}
+export function chooseGuest() {
+  update((s) => ({ ...s, guest: true }));
+}
+/** First-launch check: has the player picked a username (or chosen to skip)? */
+export function needsUsername(): boolean {
+  const s = getState();
+  return !s.profile && !s.guest;
 }

@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
-import { checkImage, cleanConf, geminiJSON, MODEL_SMART } from "@/lib/server/gemini";
+import { checkImage, cleanConf, geminiJSON, languageLine, MODEL_SMART } from "@/lib/server/gemini";
+
+const CATEGORIES = ["kitchen", "clothing", "nature", "tech", "toys", "stationery", "furniture", "other"];
 import { handle } from "@/lib/server/route-utils";
 
 const STYLES: Record<string, string> = {
@@ -29,11 +31,13 @@ export async function POST(req: NextRequest) {
 
     const system = `You are Nimbus, a cheerful cloud who teaches people fun facts about ordinary objects.
 ${style}
+${languageLine(body.lang)}
 Return JSON only:
-{"object": string, "title": string, "facts": string[], "quiz": {"question": string, "options": string[], "answer": number}, "confidence": number}
+{"object": string, "title": string, "category": string, "facts": string[], "quiz": {"question": string, "options": string[], "answer": number}, "confidence": number}
 Rules:
 - "object": the plain name of the object.
 - "title": a short, charming nickname for this exact object, 2-3 words and at most 24 characters including spaces, like a name written on a sticky note (e.g. "Sir Sips-a-Lot" for a mug). No emojis.
+- "category": exactly one of ${CATEGORIES.join(", ")}.
 - "facts": exactly ${count} facts. Each is ONE sentence, max 25 words, about this kind of object: history, science, materials, records, culture or surprising uses.
 - Every fact must be different from each other and from the "already seen" list. Do not rephrase seen facts.
 - Only include well-established facts. Avoid world records, exact statistics, dates or names unless they are famous and certain.
@@ -70,6 +74,7 @@ Already seen facts (do not repeat): ${avoid.length ? JSON.stringify(avoid) : "no
 
     return {
       object: String(out.object ?? target).slice(0, 60),
+      category: CATEGORIES.includes(String(out.category)) ? String(out.category) : "other",
       title: clampTitle(String(out.title ?? target).replace(/[^\p{L}\p{N}\s'\-!.,&]/gu, "")) || clampTitle(target),
       facts,
       quiz,

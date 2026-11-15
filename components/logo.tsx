@@ -2,7 +2,7 @@
 import gsap from "gsap";
 import { useEffect, useRef } from "react";
 
-export function Logo({ size = "clamp(4.2rem, 22vw, 7rem)", animate = true }: { size?: string; animate?: boolean }) {
+export function Logo({ size = "clamp(3.8rem, 19.5vw, 6.2rem)", animate = true }: { size?: string; animate?: boolean }) {
   const ref = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (!animate || !ref.current) return;
@@ -13,7 +13,7 @@ export function Logo({ size = "clamp(4.2rem, 22vw, 7rem)", animate = true }: { s
       { y: 0, scale: 1, opacity: 1, rotation: 0, duration: 0.9, ease: "elastic.out(1, 0.45)", stagger: 0.07 },
     );
   }, [animate]);
-  const word = "Curio";
+  const word = "Know it";
   return (
     <h1
       ref={ref}

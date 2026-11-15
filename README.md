@@ -1,4 +1,4 @@
-# Curio
+# Know it
 
 **Learn something extraordinary about the ordinary.** Swap your next scroll for a snap. Snap any everyday object and Nimbus the cloud tells you its secrets.
 
@@ -7,7 +7,7 @@ Bay Valley Hacks · Theme: *Elevate the Ordinary* · Deadline 8:30 pm PST
 ## Features
 - **Facts:** take a photo, the AI outlines the object (you tap which one if it's unsure), then 5–10 fresh facts pop in (never repeats facts you've already seen), plus a quick quiz.
 - **Bulletin Board:** every object becomes a sticky note with an AI nickname in handwriting. Tap a note to see its photo and facts; hold and drag to move; drag to the trash zone to unpin (with undo); pinch to zoom; rename notes.
-- **Hunt Mode:** find the object before the timer runs out. Each find makes the next challenge harder and faster (60 s shrinking 8% per level, 15 s floor). 3 lives, high score.
+- **Hunt:** find the object before the timer runs out. Each find makes the next challenge harder and faster (60 s shrinking 8% per level, 15 s floor). 3 lives, high score.
 - AI compliment from Nimbus, brain levels and XP, cloud transitions, sound effects, looping music per screen, light/dark mode, settings.
 - Installable mobile PWA.
 
@@ -18,6 +18,12 @@ npm install
 npm run dev                  # http://localhost:3000
 ```
 In a Claude Code cloud session, the key is injected by the network proxy: set `GEMINI_API_KEY=proxy-injected` in `.env.local` and run `npm run dev:cloud` (Node's fetch needs `NODE_USE_ENV_PROXY=1` to use the proxy).
+
+## Leaderboard setup (Vercel)
+The Hunt leaderboard and usernames need a small database so every phone sees the same scores.
+1. In Vercel, open your project, then **Storage**, then **Create Database**, then **Upstash** (Redis, free plan).
+2. Connect it to this project. Vercel adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` for you.
+3. **Redeploy.** Without this step the leaderboard still runs but only in a temporary test mode that is not shared or kept.
 
 ## Deploy (Vercel)
 1. Import the repo (the app is at the repo root, so leave **Root Directory** empty).

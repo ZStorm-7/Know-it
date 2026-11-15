@@ -14,7 +14,7 @@ export function Camera({
   onCapture,
   onBack,
   confirm = true,
-  hint = "Point me at one object",
+  hint = "Show me something ordinary",
   top,
   disabled,
 }: {
@@ -194,7 +194,7 @@ export function Camera({
             </h2>
             <p className="mt-2 text-[0.95rem] text-[var(--ink-soft)]">
               {state === "explain"
-                ? "Curio uses your camera to spot objects. Photos stay on your phone, except the one I look at."
+                ? "Know it uses your camera to spot objects. Photos stay on your phone, except the one I look at."
                 : state === "blocked"
                   ? "Your browser said no to the camera. Allow camera access in your browser settings, then tap Try again."
                   : isPhone

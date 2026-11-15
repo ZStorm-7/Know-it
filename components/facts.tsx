@@ -1,13 +1,15 @@
 "use client";
 import gsap from "gsap";
-import { Camera as CameraIcon, Home as HomeIcon } from "lucide-react";
+import { Camera as CameraIcon, Home as HomeIcon, StickyNote } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { api, ApiError, Detected } from "@/lib/client/api";
 import { haptic, sfx } from "@/lib/client/audio";
 import { shrinkDataUrl } from "@/lib/client/image";
-import { addNote, addXp, Box, getState, NOTE_COLOR_COUNT, objectKey, rememberFacts, update, useStore } from "@/lib/client/store";
+import { setPendingNote } from "@/lib/client/nav";
+import { ANALYZE_LINES, shuffle, shuffleQuiz } from "@/lib/client/random";
+import { addNote, addXp, Box, getState, objectKey, recordActivity, rememberFacts, update, useStore } from "@/lib/client/store";
 import { useNav } from "./app";
-import { clampTitle, CloudLoader, Nimbus, NOTE_COLORS, noteFontSize, Pushpin } from "./art";
+import { categoryColor, clampTitle, CloudLoader, Nimbus, NOTE_COLORS, noteFontSize, Pushpin } from "./art";
 import { Camera } from "./camera";
 import { PhotoBox } from "./photo-box";
 import { Btn, confetti, CountUp, IconBtn, toast } from "./ui";
@@ -21,6 +23,7 @@ type Result = {
   quiz: { question: string; options: string[]; answer: number } | null;
   confidence: number;
   metBefore: boolean;
+  category: string;
 };
 
 type Phase =
@@ -30,14 +33,6 @@ type Phase =
   | { k: "result"; r: Result }
   | { k: "error"; msg: string };
 
-const LINES = [
-  "Asking the clouds...",
-  "Flipping through the sky library...",
-  "Polishing my fact goggles...",
-  "Whispering to the object...",
-  "Counting fun facts...",
-  "Fluffing up my brain...",
-];
 
 function area(b: Box) {
   return (b[2] - b[0]) * (b[3] - b[1]);
@@ -115,9 +110,10 @@ export function Facts() {
           object: res.object || obj.name,
           title: clampTitle(res.title) || clampTitle(obj.name),
           facts: res.facts,
-          quiz: res.quiz,
+          quiz: res.quiz ? shuffleQuiz(res.quiz) : null,
           confidence: Math.round((res.confidence + obj.confidence) / 2),
           metBefore: seen.length > 0,
+          category: res.category,
         },
       });
     } catch (e) {
@@ -141,7 +137,16 @@ export function Facts() {
         <Choose photo={phase.photo} objects={phase.objects} onPick={(o) => learn(phase.photo, o)} onRetake={() => setPhase({ k: "camera" })} />
       )}
       {phase.k === "result" && (
-        <ResultView key={phase.r.photo} r={phase.r} onAgain={() => setPhase({ k: "camera" })} onHome={() => go("home")} />
+        <ResultView
+          key={phase.r.photo}
+          r={phase.r}
+          onAgain={() => setPhase({ k: "camera" })}
+          onHome={() => go("home")}
+          onBoard={(id) => {
+            if (id) setPendingNote(id);
+            go("board");
+          }}
+        />
       )}
       {phase.k === "error" && (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-gradient-to-b from-sky-400/90 to-indigo-600/90 p-6">
@@ -166,7 +171,7 @@ export function Facts() {
 
 // ---------- Tutorial ----------
 const STEPS = [
-  { mood: "happy" as const, text: "Hi, I'm Nimbus! Instead of scrolling, snap any everyday object and I'll tell you its secrets." },
+  { mood: "happy" as const, text: "Hi, I'm Nimbus! Show me something ordinary and I'll make it extraordinary. Instead of scrolling, snap any everyday object." },
   { mood: "wow" as const, text: "Point your camera at ONE object, then tap the big white button." },
   { mood: "think" as const, text: "If I see a few things, I'll outline them. Just tap the one you mean!" },
   { mood: "happy" as const, text: "Every object you learn about becomes a sticky note on your Bulletin Board. Ready?" },
@@ -230,15 +235,17 @@ function Tutorial({ onDone }: { onDone: () => void }) {
 
 // ---------- Loading ----------
 function Loading({ photo, onCancel }: { photo: string; onCancel: () => void }) {
+  // A new random order every time, so the lines never feel repeated.
+  const [order] = useState(() => shuffle(ANALYZE_LINES));
   const [line, setLine] = useState(0);
   const lineRef = useRef<HTMLParagraphElement>(null);
   const root = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     gsap.fromTo(root.current, { opacity: 0 }, { opacity: 1, duration: 0.3 });
-    const t = setInterval(() => setLine((l) => (l + 1) % LINES.length), 1700);
+    const t = setInterval(() => setLine((l) => (l + 1) % order.length), 1700);
     return () => clearInterval(t);
-  }, []);
+  }, [order.length]);
   useEffect(() => {
     gsap.fromTo(lineRef.current, { y: 14, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "back.out(2)" });
   }, [line]);
@@ -256,7 +263,7 @@ function Loading({ photo, onCancel }: { photo: string; onCancel: () => void }) {
         </div>
         <CloudLoader size={130} />
         <p ref={lineRef} className="h-7 text-center text-xl font-extrabold">
-          {LINES[line]}
+          {order[line]}
         </p>
         <button onClick={onCancel} className="glass rounded-full px-8 py-3 text-lg font-extrabold active:scale-95">
           Cancel
@@ -267,7 +274,25 @@ function Loading({ photo, onCancel }: { photo: string; onCancel: () => void }) {
 }
 
 // ---------- Choose object ----------
-function Choose({ photo, objects, onPick, onRetake }: { photo: string; objects: Detected[]; onPick: (o: Detected) => void; onRetake: () => void }) {
+export function Choose({
+  photo,
+  objects,
+  onPick,
+  onRetake,
+  prompt = "I see a few things! Tap the one you want to learn about.",
+  retakeLabel = "Retake photo",
+  autoLabel,
+  onAuto,
+}: {
+  photo: string;
+  objects: Detected[];
+  onPick: (o: Detected) => void;
+  onRetake: () => void;
+  prompt?: string;
+  retakeLabel?: string;
+  autoLabel?: string;
+  onAuto?: () => void;
+}) {
   const colors = ["#ffd23f", "#ff6fae", "#34d399"];
   const root = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -277,12 +302,12 @@ function Choose({ photo, objects, onPick, onRetake }: { photo: string; objects: 
     <div ref={root} className="absolute inset-0 z-30 flex flex-col items-center gap-4 overflow-y-auto px-5 pt-6" style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}>
       <div data-in className="flex w-full max-w-md items-center gap-3">
         <Nimbus size={110} mood="think" className="bob shrink-0" />
-        <div className="bubble flex-1 px-4 py-3 text-[1rem] font-bold after:hidden">I see a few things! Tap the one you want to learn about.</div>
+        <div className="bubble bubble-left flex-1 px-4 py-3 text-[1rem] font-bold">{prompt}</div>
       </div>
       <div data-in className="w-full max-w-md">
         <PhotoBox
           src={photo}
-          maxHeight="50dvh"
+          maxHeight="46dvh"
           outlines={objects.map((o, i) => ({ box: o.box, label: o.name, color: colors[i % 3], selectable: true }))}
           onSelect={(i) => onPick(objects[i])}
         />
@@ -294,8 +319,13 @@ function Choose({ photo, objects, onPick, onRetake }: { photo: string; objects: 
             {o.name}
           </Btn>
         ))}
+        {onAuto && autoLabel && (
+          <Btn variant="sun" className="h-14" onClick={onAuto}>
+            {autoLabel}
+          </Btn>
+        )}
         <button className="mt-1 text-sm font-bold underline opacity-90" onClick={onRetake}>
-          Retake photo
+          {retakeLabel}
         </button>
       </div>
     </div>
@@ -313,13 +343,14 @@ function revealTimes(n: number, total: number) {
   });
 }
 
-function ResultView({ r, onAgain, onHome }: { r: Result; onAgain: () => void; onHome: () => void }) {
+function ResultView({ r, onAgain, onHome, onBoard }: { r: Result; onAgain: () => void; onHome: () => void; onBoard: (noteId: string | null) => void }) {
   const root = useRef<HTMLDivElement>(null);
-  const boardChip = useRef<HTMLDivElement>(null);
+  const boardChip = useRef<HTMLButtonElement>(null);
+  const [savedId, setSavedId] = useState<string | null>(null);
   const [stage, setStage] = useState<"reveal" | "pin" | "done">("reveal");
   const [xpGain, setXpGain] = useState(0);
   const [quizPick, setQuizPick] = useState<number | null>(null);
-  const [noteColor] = useState(() => Math.floor(Math.random() * NOTE_COLOR_COUNT));
+  const [noteColor] = useState(() => categoryColor(r.category));
 
   // reveal facts: slow -> fast -> slow, with rising pops
   useLayoutEffect(() => {
@@ -344,6 +375,8 @@ function ResultView({ r, onAgain, onHome }: { r: Result; onAgain: () => void; on
       const gain = r.facts.length * 5;
       setXpGain(gain);
       addXp(gain);
+      const streak = recordActivity();
+      if (streak && streak > 1) setTimeout(() => toast(`${streak}-day streak! Keep it going.`), 1800);
       sfx("chime");
       setStage("pin");
     }, [], "+=0.5");
@@ -358,7 +391,8 @@ function ResultView({ r, onAgain, onHome }: { r: Result; onAgain: () => void; on
     (async () => {
       try {
         const small = await shrinkDataUrl(r.photo, 640);
-        await addNote(r.title, { photo: small, box: r.box, facts: r.facts, confidence: r.confidence, object: r.object }, noteColor);
+        const n = await addNote(r.title, { photo: small, box: r.box, facts: r.facts, confidence: r.confidence, object: r.object }, noteColor, r.category);
+        setSavedId(n.id);
       } catch {
         toast("Couldn't save to your board (storage full?)");
       }
@@ -376,9 +410,9 @@ function ResultView({ r, onAgain, onHome }: { r: Result; onAgain: () => void; on
           <h2 className="font-display flex-1 text-center text-[2rem] leading-none" style={{ textShadow: "0 3px 0 #8b5cf6" }}>
             Facts
           </h2>
-          <div ref={boardChip} className="icon-btn" aria-label="Bulletin board">
-            <Pushpin size={24} />
-          </div>
+          <button ref={boardChip} className="icon-btn" aria-label="Open my Bulletin Board" onClick={() => onBoard(savedId)}>
+            <StickyNote size={24} strokeWidth={2.6} />
+          </button>
         </div>
 
         <div data-head className="mx-auto max-w-md">
@@ -391,8 +425,9 @@ function ResultView({ r, onAgain, onHome }: { r: Result; onAgain: () => void; on
               We&apos;ve met before! Here are new facts.
             </div>
           )}
+          <div className="text-sm font-extrabold capitalize opacity-90">Ordinary: {r.object}</div>
+          <div className="my-0.5 text-lg font-extrabold leading-none opacity-80" aria-hidden>↓ elevated ↓</div>
           <div className="font-hand text-[2.6rem] leading-none font-bold">{r.title}</div>
-          <div className="mt-1 text-sm font-bold capitalize opacity-85">{r.object}</div>
         </div>
 
         <ol className="mx-auto mt-4 flex max-w-md flex-col gap-3">
@@ -418,7 +453,7 @@ function ResultView({ r, onAgain, onHome }: { r: Result; onAgain: () => void; on
         {stage === "done" && r.quiz && <Quiz quiz={r.quiz} pick={quizPick} onPick={setQuizPick} />}
 
         <div className="mx-auto mt-6 max-w-md text-center text-[0.72rem] leading-snug opacity-80">
-          AI confidence: ~{r.confidence}%
+          AI confidence: about {r.confidence}%
           <br />
           This is AI, and some facts may be incorrect.
         </div>
@@ -430,7 +465,7 @@ function ResultView({ r, onAgain, onHome }: { r: Result; onAgain: () => void; on
           <HomeIcon size={20} strokeWidth={2.8} /> Main Menu
         </Btn>
         <Btn variant="sun" className="h-16 text-[1.15rem]" onClick={onAgain}>
-          <CameraIcon size={20} strokeWidth={2.8} /> Another Picture
+          <CameraIcon size={20} strokeWidth={2.8} /> Snap Again
         </Btn>
       </div>
 
@@ -482,8 +517,9 @@ function Quiz({ quiz, pick, onPick }: { quiz: NonNullable<Result["quiz"]>; pick:
         {quiz.options.map((o, i) => {
           const state = pick === null ? "" : i === quiz.answer ? "bg-[var(--mint)] text-white" : i === pick ? "bg-[var(--bad)] text-white" : "opacity-60";
           return (
-            <button key={i} onClick={() => answer(i)} className={`rounded-2xl border-[2.5px] border-[var(--ink)] px-4 py-2.5 text-left font-bold transition active:scale-[0.97] ${state}`}>
-              {o}
+            <button key={i} onClick={() => answer(i)} className={`flex items-center gap-3 rounded-2xl border-[2.5px] border-[var(--ink)] px-3 py-2.5 text-left font-bold transition active:scale-[0.97] ${state}`}>
+              <span className="font-display grid h-8 w-8 shrink-0 place-items-center rounded-lg border-2 border-[var(--ink)] bg-white text-[var(--ink)]">{"ABC"[i]}</span>
+              <span>{o}</span>
             </button>
           );
         })}
@@ -493,7 +529,7 @@ function Quiz({ quiz, pick, onPick }: { quiz: NonNullable<Result["quiz"]>; pick:
 }
 
 // ---------- Sticky-note placing animation ----------
-function PinFly({ title, color, target, onDone }: { title: string; color: number; target: React.RefObject<HTMLDivElement | null>; onDone: () => void }) {
+function PinFly({ title, color, target, onDone }: { title: string; color: number; target: React.RefObject<HTMLElement | null>; onDone: () => void }) {
   const note = useRef<HTMLDivElement>(null);
   const pin = useRef<HTMLDivElement>(null);
   const label = useRef<HTMLDivElement>(null);

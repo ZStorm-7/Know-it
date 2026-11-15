@@ -1,8 +1,10 @@
 "use client";
 import gsap from "gsap";
-import { Check, Home as HomeIcon, Maximize, Minus, Pencil, Plus, Trash2, Undo2 } from "lucide-react";
+import { Check, Home as HomeIcon, Maximize, Minus, Pencil, Plus, Share2, Trash2, Undo2 } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { haptic, sfx } from "@/lib/client/audio";
+import { clearPendingNote, peekPendingNote } from "@/lib/client/nav";
+import { shareNote } from "@/lib/client/share";
 import {
   getNoteDetail,
   getState,
@@ -88,6 +90,17 @@ export function Board() {
   useLayoutEffect(() => {
     fit(false);
   }, [fit]);
+
+  // arriving from Facts: open the note you just made after the pin lands
+  useEffect(() => {
+    const id = peekPendingNote();
+    if (!id) return;
+    const t = setTimeout(() => {
+      setOpenId(id);
+      clearPendingNote();
+    }, 1500);
+    return () => clearTimeout(t);
+  }, []);
 
   // pin-drop animation for newly added notes
   useEffect(() => {
@@ -524,13 +537,29 @@ function NoteSheet({ id, onClose, onUnpin }: { id: string | null; onClose: () =>
 
           {detail && (
             <p className="mt-4 text-center text-[0.72rem] text-[var(--ink-soft)]">
-              AI confidence: ~{detail.confidence}% · This is AI, and some facts may be incorrect.
+              AI confidence: about {detail.confidence}% · This is AI, and some facts may be incorrect.
             </p>
           )}
 
           <div className="mt-4 flex gap-3">
             <Btn variant="white" className="h-14" onClick={() => note && onUnpin(note.id)}>
               <Trash2 size={18} strokeWidth={2.8} /> Unpin
+            </Btn>
+            <Btn
+              variant="sun"
+              className="h-14"
+              disabled={!detail}
+              onClick={async () => {
+                if (!note || !detail) return;
+                try {
+                  const r = await shareNote(note, detail);
+                  if (r === "downloaded") toast("Share card saved to your downloads");
+                } catch {
+                  toast("Couldn't make the share card");
+                }
+              }}
+            >
+              <Share2 size={18} strokeWidth={2.8} /> Share
             </Btn>
             <Btn variant="mint" className="h-14" onClick={onClose}>
               Done
