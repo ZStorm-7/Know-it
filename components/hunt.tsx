@@ -372,7 +372,7 @@ function Intro({ best, onStart, onBack }: { best: number; onStart: () => void; o
         <IconBtn label="Back" onClick={onBack}>
           <HomeIcon size={22} strokeWidth={2.6} />
         </IconBtn>
-        <h2 className="font-display flex-1 pr-[46px] text-center text-[2.2rem] leading-none" style={{ textShadow: "0 3px 0 #ff6fae" }}>
+        <h2 className="font-display flex-1 pr-[52px] text-center text-[2.2rem] leading-none" style={{ textShadow: "0 3px 0 #ff6fae" }}>
           Hunt Mode
         </h2>
       </div>
@@ -400,7 +400,7 @@ function Intro({ best, onStart, onBack }: { best: number; onStart: () => void; o
         </div>
       </div>
       <div data-in className="mx-auto w-full max-w-md">
-        <Btn className="text-2xl" style={{ height: "clamp(60px, 9dvh, 80px)" }} onClick={onStart}>
+        <Btn className="text-2xl" style={{ height: "clamp(68px, 10dvh, 90px)" }} onClick={onStart}>
           Start hunting
         </Btn>
       </div>
@@ -465,10 +465,10 @@ function Over({ score, best, newBest, last, elevated, onAgain, onHome }: { score
       )}
       <div className="flex-1" />
       <div data-in className="flex w-full max-w-md gap-3">
-        <Btn variant="white" className="h-14 text-lg" onClick={onHome}>
+        <Btn variant="white" className="h-16 text-xl" onClick={onHome}>
           <HomeIcon size={20} strokeWidth={2.8} /> Main Menu
         </Btn>
-        <Btn className="h-14 text-lg" onClick={onAgain}>
+        <Btn className="h-16 text-xl" onClick={onAgain}>
           <RotateCcw size={20} strokeWidth={2.8} /> Play Again
         </Btn>
       </div>

@@ -124,17 +124,17 @@ export function Home() {
       {/* main buttons */}
       <div className="mx-auto flex w-full max-w-md flex-col" style={{ gap: "clamp(10px, 1.8dvh, 18px)" }}>
         <div data-in>
-          <Btn variant="sun" className="text-[clamp(1.25rem,5.5vw,1.6rem)]" style={{ height: "clamp(60px, 9.5dvh, 84px)" }} onClick={() => go("facts")}>
+          <Btn variant="sun" className="text-[clamp(1.35rem,6vw,1.75rem)]" style={{ height: "clamp(66px, 10.2dvh, 92px)" }} onClick={() => go("facts")}>
             <Camera size={28} strokeWidth={2.8} /> Facts
           </Btn>
         </div>
         <div data-in>
-          <Btn className="text-[clamp(1.25rem,5.5vw,1.6rem)]" style={{ height: "clamp(60px, 9.5dvh, 84px)" }} onClick={() => go("hunt")}>
+          <Btn className="text-[clamp(1.35rem,6vw,1.75rem)]" style={{ height: "clamp(66px, 10.2dvh, 92px)" }} onClick={() => go("hunt")}>
             <Search size={28} strokeWidth={2.8} /> Hunt Mode
           </Btn>
         </div>
         <div data-in>
-          <Btn variant="violet" className="text-[clamp(1.1rem,4.8vw,1.35rem)]" style={{ height: "clamp(52px, 7.5dvh, 68px)" }} onClick={() => go("board")}>
+          <Btn variant="violet" className="text-[clamp(1.2rem,5.2vw,1.5rem)]" style={{ height: "clamp(58px, 8.4dvh, 76px)" }} onClick={() => go("board")}>
             <Pushpin size={22} /> Bulletin Board
           </Btn>
         </div>

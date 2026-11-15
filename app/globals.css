@@ -208,9 +208,9 @@ textarea {
 .icon-btn {
   display: grid;
   place-items: center;
-  width: 46px;
-  height: 46px;
-  border-radius: 16px;
+  width: 52px;
+  height: 52px;
+  border-radius: 18px;
   border: 2.5px solid var(--ink);
   background: #fff;
   color: var(--ink);
@@ -304,8 +304,8 @@ textarea {
 
 /* ---------- Camera ---------- */
 .shutter {
-  width: 78px;
-  height: 78px;
+  width: 88px;
+  height: 88px;
   border-radius: 50%;
   border: 5px solid #fff;
   background: transparent;
@@ -314,8 +314,8 @@ textarea {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 .shutter > span {
-  width: 58px;
-  height: 58px;
+  width: 66px;
+  height: 66px;
   border-radius: 50%;
   background: #fff;
   transition: transform 0.12s;

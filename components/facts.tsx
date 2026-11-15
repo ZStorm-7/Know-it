@@ -149,10 +149,10 @@ export function Facts() {
             <Nimbus size={150} mood="sad" className="bob mx-auto" />
             <p className="mt-3 text-lg font-bold">{phase.msg}</p>
             <div className="mt-5 flex flex-col gap-3">
-              <Btn variant="mint" className="h-14 text-lg" onClick={() => setPhase({ k: "camera" })}>
+              <Btn variant="mint" className="h-16 text-xl" onClick={() => setPhase({ k: "camera" })}>
                 Try again
               </Btn>
-              <Btn variant="white" className="h-12" onClick={() => go("home")}>
+              <Btn variant="white" className="h-14" onClick={() => go("home")}>
                 Main Menu
               </Btn>
             </div>
@@ -215,10 +215,10 @@ function Tutorial({ onDone }: { onDone: () => void }) {
             ))}
           </p>
           <div className="mt-4 flex gap-3">
-            <Btn variant="white" className="h-12" onClick={onDone}>
+            <Btn variant="white" className="h-14" onClick={onDone}>
               Skip
             </Btn>
-            <Btn variant="mint" className="h-12 text-lg" onClick={next}>
+            <Btn variant="mint" className="h-14 text-xl" onClick={next}>
               {i < STEPS.length - 1 ? "Next" : "Let's go!"}
             </Btn>
           </div>
@@ -289,7 +289,7 @@ function Choose({ photo, objects, onPick, onRetake }: { photo: string; objects: 
       </div>
       <div data-in className="flex w-full max-w-md flex-col gap-2.5">
         {objects.map((o, i) => (
-          <Btn key={i} variant="white" className="h-13 py-3 text-lg capitalize" onClick={() => onPick(o)}>
+          <Btn key={i} variant="white" className="h-15 py-3 text-xl capitalize" onClick={() => onPick(o)}>
             <span className="h-4 w-4 rounded-full border-2 border-[var(--ink)]" style={{ background: colors[i % 3] }} />
             {o.name}
           </Btn>
@@ -426,10 +426,10 @@ function ResultView({ r, onAgain, onHome }: { r: Result; onAgain: () => void; on
 
       {/* footer */}
       <div className="flex gap-3 border-t-2 border-white/30 px-5 pt-3" style={{ paddingBottom: "max(14px, env(safe-area-inset-bottom))" }}>
-        <Btn variant="white" className="h-14 text-[1.05rem]" onClick={onHome}>
+        <Btn variant="white" className="h-16 text-[1.15rem]" onClick={onHome}>
           <HomeIcon size={20} strokeWidth={2.8} /> Main Menu
         </Btn>
-        <Btn variant="sun" className="h-14 text-[1.05rem]" onClick={onAgain}>
+        <Btn variant="sun" className="h-16 text-[1.15rem]" onClick={onAgain}>
           <CameraIcon size={20} strokeWidth={2.8} /> Another Picture
         </Btn>
       </div>

@@ -174,10 +174,10 @@ export function Camera({
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={preview} alt="Preview" className="absolute inset-0 h-full w-full object-cover" />
           <div className="absolute inset-x-0 bottom-0 flex gap-3 bg-gradient-to-t from-black/80 to-transparent px-5 pt-16" style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}>
-            <Btn variant="white" className="h-14 text-lg" onClick={() => setPreview(null)}>
+            <Btn variant="white" className="h-16 text-xl" onClick={() => setPreview(null)}>
               <RotateCcw size={20} strokeWidth={3} /> Retake
             </Btn>
-            <Btn variant="mint" className="h-14 text-lg" onClick={() => onCapture(preview)}>
+            <Btn variant="mint" className="h-16 text-xl" onClick={() => onCapture(preview)}>
               <Check size={22} strokeWidth={3.2} /> Use this
             </Btn>
           </div>
@@ -203,21 +203,21 @@ export function Camera({
             </p>
             <div className="mt-5 flex flex-col gap-3">
               {state === "explain" && (
-                <Btn variant="mint" className="h-14 text-lg" onClick={allow}>
+                <Btn variant="mint" className="h-16 text-xl" onClick={allow}>
                   Turn on camera
                 </Btn>
               )}
               {state !== "explain" && (
-                <Btn variant="mint" className="h-14 text-lg" onClick={() => setState("starting")}>
+                <Btn variant="mint" className="h-16 text-xl" onClick={() => setState("starting")}>
                   Try again
                 </Btn>
               )}
               {state !== "explain" && isPhone && (
-                <Btn variant="sun" className="h-12" onClick={() => nativeInput.current?.click()}>
+                <Btn variant="sun" className="h-14" onClick={() => nativeInput.current?.click()}>
                   Open phone camera
                 </Btn>
               )}
-              <Btn variant="white" className="h-12" onClick={() => fileInput.current?.click()}>
+              <Btn variant="white" className="h-14" onClick={() => fileInput.current?.click()}>
                 {isPhone ? "Pick from photos" : "Pick a photo from files"}
               </Btn>
             </div>

@@ -354,7 +354,7 @@ export function Board() {
           <div className="card pointer-events-auto max-w-xs p-5">
             <p className="text-lg font-bold">Your board is empty!</p>
             <p className="mt-1 text-[var(--ink-soft)]">Snap an object in Facts and its sticky note will land here.</p>
-            <Btn variant="sun" className="mt-4 h-12 text-lg" onClick={() => go("facts")}>
+            <Btn variant="sun" className="mt-4 h-14 text-xl" onClick={() => go("facts")}>
               Go to Facts
             </Btn>
           </div>
@@ -529,10 +529,10 @@ function NoteSheet({ id, onClose, onUnpin }: { id: string | null; onClose: () =>
           )}
 
           <div className="mt-4 flex gap-3">
-            <Btn variant="white" className="h-12" onClick={() => note && onUnpin(note.id)}>
+            <Btn variant="white" className="h-14" onClick={() => note && onUnpin(note.id)}>
               <Trash2 size={18} strokeWidth={2.8} /> Unpin
             </Btn>
-            <Btn variant="mint" className="h-12" onClick={onClose}>
+            <Btn variant="mint" className="h-14" onClick={onClose}>
               Done
             </Btn>
           </div>

@@ -99,7 +99,7 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
         <div className="mt-4 flex flex-col gap-3">
           <Btn
             variant="white"
-            className="h-12"
+            className="h-14"
             onClick={() => {
               update((st) => ({ ...st, tutorialDone: false, boardHintDone: false }));
               toast("The tutorial will play next time you open Facts");
@@ -108,12 +108,12 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
             Replay tutorial
           </Btn>
           {!confirmReset ? (
-            <Btn variant="white" className="h-12" onClick={() => setConfirmReset(true)}>
+            <Btn variant="white" className="h-14" onClick={() => setConfirmReset(true)}>
               Reset progress
             </Btn>
           ) : (
             <Btn
-              className="h-12"
+              className="h-14"
               onClick={() => {
                 resetProgress();
                 setConfirmReset(false);
