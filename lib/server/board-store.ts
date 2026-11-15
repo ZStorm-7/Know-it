@@ -99,3 +99,14 @@ export async function myEntry(key: string): Promise<{ rank: number; score: numbe
   if (score === null) return null;
   return { rank: await rankFor(score), score };
 }
+
+/** Removes an account and its score, which frees the name for someone else. */
+export async function deleteUser(key: string): Promise<void> {
+  if (storageMode === "memory") {
+    memUsers.delete(key);
+    memScores.delete(key);
+    return;
+  }
+  await redis(["HDEL", "users", key]);
+  await redis(["ZREM", "scores", key]);
+}

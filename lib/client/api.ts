@@ -61,6 +61,10 @@ export const api = {
   register: (name: string, signal?: AbortSignal) => post<{ name: string; token: string; mode: string }>("/api/leaderboard/register", { name }, signal),
   submitScore: (name: string, token: string, score: number, signal?: AbortSignal) =>
     post<{ rank: number; score: number }>("/api/leaderboard/score", { name, token, score }, signal),
+  login: (name: string, token: string, signal?: AbortSignal) =>
+    post<{ name: string; token: string; rank: number | null; score: number }>("/api/leaderboard/login", { name, token }, signal),
+  deleteAccount: (name: string, token: string, signal?: AbortSignal) =>
+    post<{ ok: boolean }>("/api/leaderboard/delete", { name, token }, signal),
   leaderboard: async (name?: string, limit = 20): Promise<BoardData> => {
     const q = new URLSearchParams({ limit: String(limit) });
     if (name) q.set("name", name);

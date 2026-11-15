@@ -3,7 +3,7 @@ import { ReactNode, useRef, useState } from "react";
 import { LANGUAGES } from "@/lib/client/languages";
 import { sfx } from "@/lib/client/audio";
 import { exportBackup, importBackup, resetProgress, setSetting, Settings, update, useStore } from "@/lib/client/store";
-import { useNav } from "./app";
+import { AccountSection } from "./account";
 import { Btn, Sheet, toast } from "./ui";
 
 function Row({ label, sub, children }: { label: string; sub?: string; children: ReactNode }) {
@@ -54,8 +54,6 @@ function Seg<T extends string>({ value, options, onChange }: { value: T; options
 
 export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const s = useStore((st) => st.settings);
-  const profile = useStore((st) => st.profile);
-  const { go } = useNav();
   const [confirmReset, setConfirmReset] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
 
@@ -86,6 +84,10 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
       <div className="px-5 pb-6 pt-2">
         <h2 className="font-display mb-1 text-center text-3xl">Settings</h2>
 
+        <h3 className="mt-2 mb-2 text-lg font-extrabold">Account</h3>
+        <AccountSection onClose={onClose} />
+
+        <h3 className="mt-5 text-lg font-extrabold">Preferences</h3>
         <div className="divide-y-2 divide-slate-200 dark:divide-white/10">
           <Row label="Theme">
             <Seg value={s.theme} options={[["light", "Light"], ["dark", "Dark"], ["system", "Auto"]]} onChange={set("theme")} />
@@ -113,21 +115,6 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
           </Row>
           <Row label="Text size">
             <Seg value={s.textSize} options={[["s", "S"], ["m", "M"], ["l", "L"]]} onChange={set("textSize")} />
-          </Row>
-          <Row label="Username" sub={profile ? "Shown on the Hunt leaderboard" : "Join the Hunt leaderboard"}>
-            {profile ? (
-              <span className="font-extrabold">{profile.name}</span>
-            ) : (
-              <button
-                className="rounded-xl border-[2.5px] border-[var(--ink)] bg-[var(--sun)] px-3 py-1.5 font-extrabold text-[var(--ink)]"
-                onClick={() => {
-                  onClose();
-                  go("username");
-                }}
-              >
-                Choose one
-              </button>
-            )}
           </Row>
           <Row label="Device" sub="Reshapes the buttons">
             <Seg value={s.device || "phone"} options={[["phone", "Phone"], ["desktop", "Computer"]]} onChange={set("device")} />

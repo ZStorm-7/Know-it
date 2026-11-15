@@ -7,6 +7,7 @@ import { levelInfo, liveStreak, useStore } from "@/lib/client/store";
 import { useNav } from "./app";
 import { BrainIcon, Nimbus } from "./art";
 import { CollectionSheet } from "./collection";
+import { WelcomeBack } from "./welcome";
 import { Logo } from "./logo";
 import { Btn, IconBtn } from "./ui";
 
@@ -165,6 +166,7 @@ export function Home() {
 
       <div data-in className="mt-3 text-center text-[0.72rem] font-bold opacity-80">Built with Claude Code · AI by Gemini</div>
       <CollectionSheet open={collectionOpen} onClose={() => setCollectionOpen(false)} />
+      <WelcomeBack />
     </div>
   );
 }

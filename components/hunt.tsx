@@ -1,17 +1,17 @@
 "use client";
 import gsap from "gsap";
-import { Crosshair, Home as HomeIcon, RotateCcw } from "lucide-react";
+import { Home as HomeIcon, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api, Detected } from "@/lib/client/api";
 import { pickChallenge } from "@/lib/client/challenges";
 import { CHECK_LINES, shuffle } from "@/lib/client/random";
 import { shrinkDataUrl } from "@/lib/client/image";
 import { haptic, sfx } from "@/lib/client/audio";
-import { addXp, Box, getState, recordActivity, setProfile, setSetting, update, useStore } from "@/lib/client/store";
+import { addXp, Box, getState, recordActivity, setProfile, update, useStore } from "@/lib/client/store";
 import { useNav } from "./app";
 import { CloudLoader, LifeCloud, Nimbus, RankBadge, Sparkle, TrophyIcon } from "./art";
 import { Camera } from "./camera";
-import { Choose } from "./facts";
+import { autoPick, Choose } from "./facts";
 import { Leaderboard, LeaderboardSheet } from "./leaderboard";
 import { PhotoBox } from "./photo-box";
 import { Btn, confetti, IconBtn, toast } from "./ui";
@@ -66,7 +66,6 @@ export function Hunt() {
   const best = useStore((s) => s.huntBest);
   const startEasy = useStore((s) => s.settings.huntStart) === "easy";
   const offset = startEasy ? 0 : 2;
-  const pickMode = useStore((s) => s.settings.huntPick);
 
   const [phase, setPhase] = useState<Phase>("intro");
   const [found, setFound] = useState(0);
@@ -242,8 +241,8 @@ export function Hunt() {
   const onCapture = async (photo: string) => {
     if (phase !== "play") return;
     pausedLeft.current = Math.max(0, deadline.current - performance.now());
-    if (!pickMode) return runCheck(photo);
-    // "Pick my object" is on: find the objects first and let the player tap the one they mean.
+    // Same as Facts: find the objects first. If Nimbus is sure which one you mean, it goes straight
+    // to the check. If there are several, you tap the one you are showing.
     setCheckingPhoto(photo);
     setCheckLine("Finding the objects in your photo...");
     setPhase("checking");
@@ -251,13 +250,15 @@ export function Hunt() {
     abort.current = ctrl;
     try {
       const det = await api.detect(photo, ctrl.signal);
+      const sure = autoPick(det.objects);
+      if (sure) return runCheck(photo, sure);
       if (det.objects.length >= 2) {
         sfx("boing");
         setChoose({ photo, objects: det.objects });
         setPhase("choosing");
         return;
       }
-      return runCheck(photo, det.objects[0]);
+      return runCheck(photo, det.objects[0]); // none or one unsure object: Nimbus decides
     } catch (e) {
       if ((e as Error)?.name === "AbortError") return;
       sfx("buzz");
@@ -322,22 +323,6 @@ export function Hunt() {
         )}
         <div className="glass rounded-full px-3.5 py-1.5 text-base font-extrabold whitespace-nowrap">Found: {found}</div>
       </div>
-
-      {/* option: choose which object you are showing */}
-      {(phase === "play" || phase === "loading") && (
-        <button
-          onClick={() => {
-            sfx("tap");
-            setSetting("huntPick", !pickMode);
-            toast(pickMode ? "Nimbus will pick the object for you" : "You'll tap the object you want to show");
-          }}
-          aria-pressed={pickMode}
-          className={`absolute right-5 z-10 flex items-center gap-1.5 rounded-full border-2 px-3 py-1.5 text-[0.8rem] font-extrabold whitespace-nowrap active:scale-95 ${pickMode ? "border-[var(--ink)] bg-[var(--sun)] text-[var(--ink)]" : "glass"}`}
-          style={{ top: "calc(env(safe-area-inset-top) + 178px)" }}
-        >
-          <Crosshair size={16} strokeWidth={2.8} /> Pick my object: {pickMode ? "On" : "Off"}
-        </button>
-      )}
 
       {phase === "loading" && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-sky-500/70">
@@ -480,7 +465,7 @@ function Intro({ best, onStart, onBack }: { best: number; onStart: () => void; o
         <div data-in className="card w-full max-w-md p-5">
           <ul className="flex flex-col gap-3 text-[1.02rem] font-bold">
             <li>Nimbus names an ordinary thing to find.</li>
-            <li>Snap it before the timer runs out.</li>
+            <li>Snap it before the timer runs out. If you show a few things, tap the one you mean.</li>
             <li>Each find is elevated with a wow fact. Climb from Ordinary to Remarkable to Legendary, and if you dare, Mythic. It gets faster and stricter every level.</li>
             <li>
               <div>You have 3 clouds. Miss, and one floats away.</div>

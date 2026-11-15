@@ -1,7 +1,8 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { playMusic, preloadMusic, setMusicVolume, sfx, Track, unlockAudio } from "@/lib/client/audio";
-import { getState, levelInfo, needsUsername, useStore } from "@/lib/client/store";
+import { setPrevVisit } from "@/lib/client/nav";
+import { getState, levelInfo, needsUsername, update, useStore } from "@/lib/client/store";
 import { Board } from "./board";
 import { DeviceScreen } from "./device";
 import { Facts } from "./facts";
@@ -96,6 +97,9 @@ export default function App() {
   const start = () => {
     unlockAudio();
     preloadMusic();
+    // remember when we were last here (for the welcome-back card), then stamp this visit
+    setPrevVisit(getState().lastVisit);
+    update((s) => ({ ...s, lastVisit: Date.now() }));
     go(!getState().settings.device ? "device" : needsUsername() ? "username" : "home");
   };
 

@@ -39,7 +39,7 @@ function area(b: Box) {
 }
 
 /** Pick automatically when the AI is clearly sure which object the user means. */
-function autoPick(objects: Detected[]): Detected | null {
+export function autoPick(objects: Detected[]): Detected | null {
   if (objects.length === 0) return null;
   const [a, b] = objects;
   if (!b) return a.confidence >= 45 ? a : null;

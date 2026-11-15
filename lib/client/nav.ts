@@ -10,3 +10,12 @@ export function peekPendingNote(): string | null {
 export function clearPendingNote() {
   pending = null;
 }
+
+// The time the app was opened the time before this one (0 on the very first launch).
+let prevVisit = 0;
+export function setPrevVisit(t: number) {
+  prevVisit = t;
+}
+export function getPrevVisit() {
+  return prevVisit;
+}

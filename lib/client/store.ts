@@ -15,7 +15,6 @@ export type Settings = {
   huntStart: "easy" | "normal";
   language: string;
   contrast: boolean;
-  huntPick: boolean;
   /** "" until the player picks Phone or Computer on first launch. */
   device: "" | "phone" | "desktop";
 };
@@ -57,6 +56,9 @@ export type State = {
   profile: { name: string; token: string } | null;
   /** True if the player chose to skip the username step. */
   guest: boolean;
+  /** When the app was last opened, and the leaderboard rank last time (for the welcome-back card). */
+  lastVisit: number;
+  lastRank: number | null;
   leaderboard: { name: string; score: number; at: number }[];
 };
 
@@ -73,7 +75,6 @@ export const DEFAULT_SETTINGS: Settings = {
   huntStart: "easy",
   language: "English",
   contrast: false,
-  huntPick: false,
   device: "",
 };
 
@@ -89,6 +90,8 @@ const DEFAULT: State = {
   streak: { count: 0, best: 0, last: "" },
   profile: null,
   guest: false,
+  lastVisit: 0,
+  lastRank: null,
   leaderboard: [],
 };
 
@@ -303,4 +306,9 @@ export function chooseGuest() {
 export function needsUsername(): boolean {
   const s = getState();
   return !s.profile && !s.guest;
+}
+
+/** Signs out of the leaderboard account. Notes, XP and settings stay on this phone. */
+export function signOut() {
+  update((s) => ({ ...s, profile: null, guest: true, lastRank: null }));
 }
