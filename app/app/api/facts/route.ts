@@ -1,0 +1,70 @@
+import { NextRequest } from "next/server";
+import { checkImage, cleanConf, geminiJSON, MODEL_SMART } from "@/lib/server/gemini";
+import { handle } from "@/lib/server/route-utils";
+
+const STYLES: Record<string, string> = {
+  kid: "Write for a curious 8-year-old: simple words, short sentences, playful.",
+  normal: "Write for a curious teen or adult: clear, fun and surprising.",
+  nerdy: "Write for a science lover: precise, with a bit more depth (still short).",
+};
+
+export async function POST(req: NextRequest) {
+  return handle(req, async (body) => {
+    const image = checkImage(body.image);
+    const target = String(body.target ?? "").trim().slice(0, 60) || "the main object";
+    const avoid = (Array.isArray(body.avoid) ? body.avoid : [])
+      .map((s) => String(s).slice(0, 200))
+      .slice(-40);
+    const style = STYLES[String(body.style)] ?? STYLES.normal;
+    const count = 5 + Math.floor(Math.random() * 6); // 5-10
+
+    const system = `You are Nimbus, a cheerful cloud who teaches people fun facts about ordinary objects.
+${style}
+Return JSON only:
+{"object": string, "title": string, "facts": string[], "quiz": {"question": string, "options": string[], "answer": number}, "confidence": number}
+Rules:
+- "object": the plain name of the object.
+- "title": a short, charming nickname for this exact object, 2-4 words, like a name written on a sticky note (e.g. "Sir Sips-a-Lot" for a mug). No emojis.
+- "facts": exactly ${count} facts. Each is ONE sentence, max 25 words, about this kind of object: history, science, materials, records, culture or surprising uses.
+- Every fact must be different from each other and from the "already seen" list. Do not rephrase seen facts.
+- Only include well-established facts. Avoid world records, exact statistics, dates or names unless they are famous and certain.
+- "quiz": one multiple-choice question answerable from your facts, 3 options, "answer" is the 0-based index of the correct option.
+- "confidence": 0-100, how sure you are of what the object is.
+- No emojis anywhere.`;
+
+    const user = `The object to teach about: "${target}".
+Already seen facts (do not repeat): ${avoid.length ? JSON.stringify(avoid) : "none"}.`;
+
+    const out = await geminiJSON<Record<string, unknown>>({
+      model: MODEL_SMART,
+      system,
+      user,
+      imageDataUrl: image,
+      temperature: 1.0,
+      signal: req.signal,
+    });
+
+    const seen = new Set(avoid.map((s) => s.toLowerCase()));
+    const facts = (Array.isArray(out.facts) ? out.facts : [])
+      .map((f) => String(f).trim())
+      .filter((f) => f && !seen.has(f.toLowerCase()))
+      .filter((f, i, arr) => arr.findIndex((g) => g.toLowerCase() === f.toLowerCase()) === i)
+      .slice(0, 10);
+
+    const q = (out.quiz ?? {}) as Record<string, unknown>;
+    const options = (Array.isArray(q.options) ? q.options : []).map(String).slice(0, 3);
+    const answer = Number(q.answer);
+    const quiz =
+      typeof q.question === "string" && options.length === 3 && answer >= 0 && answer < 3
+        ? { question: q.question, options, answer }
+        : null;
+
+    return {
+      object: String(out.object ?? target).slice(0, 60),
+      title: String(out.title ?? target).replace(/[^\p{L}\p{N}\s'\-!.,&]/gu, "").slice(0, 40).trim() || target,
+      facts,
+      quiz,
+      confidence: cleanConf(out.confidence),
+    };
+  });
+}
