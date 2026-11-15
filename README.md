@@ -13,7 +13,6 @@ Bay Valley Hacks · Theme: *Elevate the Ordinary* · Deadline 8:30 pm PST
 
 ## Run it
 ```bash
-cd app
 cp .env.example .env.local   # put your Gemini API key in GEMINI_API_KEY
 npm install
 npm run dev                  # http://localhost:3000
@@ -21,7 +20,7 @@ npm run dev                  # http://localhost:3000
 In a Claude Code cloud session, the key is injected by the network proxy: set `GEMINI_API_KEY=proxy-injected` in `.env.local` and run `npm run dev:cloud` (Node's fetch needs `NODE_USE_ENV_PROXY=1` to use the proxy).
 
 ## Deploy (Vercel)
-1. Import the repo, set **Root Directory** to `app`.
+1. Import the repo (the app is at the repo root, so leave **Root Directory** empty).
 2. Add the environment variable `GEMINI_API_KEY` with your real key.
 3. Deploy, then open the HTTPS link on your phone (the camera needs HTTPS) and use "Add to Home Screen".
 
