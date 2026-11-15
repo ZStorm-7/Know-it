@@ -413,7 +413,7 @@ function FeedbackView({ fb, lives, onContinue }: { fb: Feedback; lives: number; 
   }, []);
   return (
     <button
-      className={`absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 px-6 ${fb.match ? "bg-emerald-500/85" : "bg-orange-500/85"}`}
+      className={`absolute inset-0 z-20 flex flex-col items-center gap-4 overflow-y-auto px-6 py-4 *:m-auto ${fb.match ? "bg-emerald-500/85" : "bg-orange-500/85"}`}
       onClick={onContinue}
     >
       <div ref={ref} className="flex w-full max-w-sm flex-col items-center gap-4">

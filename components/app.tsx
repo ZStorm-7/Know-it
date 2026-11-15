@@ -16,6 +16,7 @@ import { UsernameScreen } from "./username";
 import { CloudTransition, TransitionHandle } from "./transition";
 import { Toaster } from "./ui";
 import { LevelUpOverlay } from "./levelup";
+import { UpdateBanner } from "./update-banner";
 
 export type Screen = "splash" | "device" | "username" | "home" | "facts" | "hunt" | "board";
 
@@ -141,6 +142,7 @@ export default function App() {
           Offline. Facts and Hunt need internet. Your board still works.
         </div>
       )}
+      <UpdateBanner />
       <Toaster />
       <CloudTransition ref={tr} />
       {levelUp && <LevelUpOverlay key={levelUp.level} level={levelUp.level} name={levelUp.name} onDone={() => setLevelUp(null)} />}

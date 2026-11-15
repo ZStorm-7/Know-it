@@ -188,8 +188,9 @@ export function Camera({
 
       {/* permission explainer / blocked / no camera */}
       {state !== "live" && state !== "starting" && !preview && (
-        <div className="absolute inset-0 z-20 flex items-center justify-center bg-gradient-to-b from-sky-400 to-indigo-500 p-6">
-          <div className="card w-full max-w-sm p-6 text-center">
+        <div className="absolute inset-0 z-20 overflow-y-auto bg-gradient-to-b from-sky-400 to-indigo-500 p-4">
+         <div className="flex min-h-full items-center justify-center">
+          <div className="card w-full max-w-sm p-5 text-center">
             <Nimbus size={150} mood={state === "explain" ? "wow" : "sad"} className="bob mx-auto" />
             <h2 className="font-display mt-2 text-2xl">
               {state === "explain" ? "Let me see!" : state === "blocked" ? "Camera is blocked" : "No camera found"}
@@ -227,6 +228,7 @@ export function Camera({
               </button>
             </div>
           </div>
+         </div>
         </div>
       )}
 

@@ -2,7 +2,7 @@
 // - App code, fonts and icons are cached as you use them (cache-first). Music is never cached here.
 // - Pages try the network first and fall back to the last cached page.
 // - /api/* is never cached (AI answers always come from the server).
-const CACHE = "knowit-v4";
+const CACHE = "knowit-v5";
 
 self.addEventListener("install", (e) => {
   e.waitUntil(caches.open(CACHE).then((c) => c.addAll(["/", "/manifest.webmanifest"])).catch(() => {}));
@@ -11,7 +11,16 @@ self.addEventListener("install", (e) => {
 
 self.addEventListener("activate", (e) => {
   e.waitUntil(
-    caches.keys().then((ks) => Promise.all(ks.filter((k) => k !== CACHE).map((k) => caches.delete(k)))).then(() => self.clients.claim()),
+    caches.keys().then(async (ks) => {
+      const old = ks.filter((k) => k !== CACHE);
+      await Promise.all(old.map((k) => caches.delete(k)));
+      await self.clients.claim();
+      // A newer worker replaced an older one: reload any open pages so nobody stays on a stale copy.
+      if (old.length) {
+        const wins = await self.clients.matchAll({ type: "window" });
+        wins.forEach((c) => c.navigate(c.url).catch(() => {}));
+      }
+    }),
   );
 });
 

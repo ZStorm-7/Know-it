@@ -81,9 +81,9 @@ export function Home() {
   }, []);
 
   return (
-    <div ref={root} className="relative flex h-full flex-col px-5" style={{ paddingTop: "max(14px, 2dvh)", paddingBottom: "max(12px, 1.5dvh)" }}>
+    <div ref={root} className="no-scrollbar relative flex h-full flex-col overflow-y-auto px-5" style={{ paddingTop: "max(14px, 2dvh)", paddingBottom: "max(12px, 1.5dvh)" }}>
       {/* top bar */}
-      <div data-in className="flex items-center gap-3">
+      <div data-in className="flex shrink-0 items-center gap-3">
         <button aria-label="Open your collection" onClick={() => setCollectionOpen(true)} className="glass flex min-w-0 flex-1 items-center gap-2 rounded-2xl px-3 py-2 text-left active:scale-[0.98]">
           <BrainIcon size={30} />
           <div className="min-w-0 flex-1">
@@ -134,14 +134,14 @@ export function Home() {
       </div>
 
       {/* logo + motto */}
-      <div data-in className="flex flex-col items-center" style={{ marginTop: "clamp(8px, 3dvh, 32px)" }}>
+      <div data-in className="flex shrink-0 flex-col items-center" style={{ marginTop: "clamp(8px, 3dvh, 32px)" }}>
         <Logo size={desktop ? "clamp(4.4rem, 8vw, 6.4rem)" : "clamp(3rem, min(19.5vw, 10.5dvh), 6.2rem)"} />
         <p className="mt-2 text-center text-[clamp(0.85rem,3.7vw,1.15rem)] leading-snug font-bold opacity-95">Learn something extraordinary about the ordinary.</p>
         <p className="glass hide-short mt-2 rounded-full px-3 py-1 text-center text-[clamp(0.72rem,3.2vw,0.85rem)] font-bold">Swap your next scroll for a snap.</p>
       </div>
 
       {/* Nimbus + compliment: the speech bubble comes out of Nimbus */}
-      <div data-in className="flex flex-1 items-center justify-center" style={{ minHeight: 0 }}>
+      <div data-in className="flex min-h-[8.5rem] flex-1 shrink-0 items-center justify-center py-2">
         <div className="flex w-full max-w-md items-start gap-3">
           <div className="home-nimbus flex shrink-0 flex-col items-center pt-1" style={{ width: "clamp(88px, 28vw, 150px)" }}>
             <Nimbus size={140} className="bob" />
@@ -168,7 +168,7 @@ export function Home() {
       </div>
 
       {/* main buttons: stacked on a phone, three tall tiles in a row on a computer */}
-      <div className={desktop ? "mx-auto grid w-full max-w-3xl grid-cols-3 gap-4" : "mx-auto flex w-full max-w-md flex-col"} style={desktop ? undefined : { gap: "clamp(10px, 1.8dvh, 18px)" }}>
+      <div className={desktop ? "mx-auto grid w-full max-w-3xl shrink-0 grid-cols-3 gap-4" : "mx-auto flex w-full max-w-md shrink-0 flex-col"} style={desktop ? undefined : { gap: "clamp(10px, 1.8dvh, 18px)" }}>
         <div data-in>
           <Btn
             variant="green"
@@ -201,7 +201,7 @@ export function Home() {
         </div>
       </div>
 
-      <div data-in className="mt-3 text-center text-[0.72rem] font-bold opacity-80">Built with Claude Code · AI by Gemini</div>
+      <div data-in className="mt-3 shrink-0 text-center text-[0.72rem] font-bold opacity-80">Built with Claude Code · AI by Gemini</div>
       <CollectionSheet open={collectionOpen} onClose={() => setCollectionOpen(false)} />
       <WelcomeBack />
     </div>

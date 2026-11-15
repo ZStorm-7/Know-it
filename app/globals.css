@@ -607,3 +607,14 @@ html[data-device="desktop"] .sticky { animation: sway 5.5s ease-in-out infinite;
 /* The timer ring shakes harder in the last seconds (already defined) and the trophy glints. */
 .glint { animation: glint 3s ease-in-out infinite; }
 @keyframes glint { 0%, 80%, 100% { filter: brightness(1); } 90% { filter: brightness(1.35); } }
+
+/* Very short phones: the visible area can be as small as 320 x 416 once the browser bars are counted. */
+@media (max-height: 520px) {
+  html[data-device="phone"] .hide-short { display: none; }
+  html[data-device="phone"] .home-nimbus svg { width: 64px; height: auto; }
+  html[data-device="phone"] .choose-nimbus svg { width: 56px; height: auto; }
+  html[data-device="phone"] .levelup-nimbus svg { width: 96px; height: auto; }
+  html[data-device="phone"] .levelup-badge { width: 84px; height: 84px; }
+  html[data-device="phone"] .tutorial-nimbus svg { width: 84px; height: auto; }
+  html[data-device="phone"] .btn3d { min-height: 46px; }
+}

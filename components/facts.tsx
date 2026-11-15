@@ -172,8 +172,8 @@ export function Facts() {
         />
       )}
       {phase.k === "error" && (
-        <div className="absolute inset-0 z-30 flex items-center justify-center bg-gradient-to-b from-sky-400/90 to-indigo-600/90 p-6">
-          <div className="card w-full max-w-sm p-6 text-center">
+        <div className="absolute inset-0 z-30 flex overflow-y-auto bg-gradient-to-b from-sky-400/90 to-indigo-600/90 p-4">
+          <div className="card m-auto w-full max-w-sm p-5 text-center">
             <Nimbus size={150} mood="sad" className="bob mx-auto" />
             <p className="mt-3 text-lg font-bold">{phase.msg}</p>
             <div className="mt-5 flex flex-col gap-3">
@@ -225,9 +225,9 @@ function Tutorial({ onDone }: { onDone: () => void }) {
   };
 
   return (
-    <div className="absolute inset-0 z-40 flex flex-col justify-end bg-slate-950/55 p-5" style={{ paddingBottom: "max(28px, env(safe-area-inset-bottom))" }}>
+    <div className="absolute inset-0 z-40 flex flex-col justify-end overflow-y-auto bg-slate-950/55 p-5" style={{ paddingBottom: "max(28px, env(safe-area-inset-bottom))" }}>
       <div ref={box} className="mx-auto w-full max-w-md">
-        <div className="mb-[-10px] ml-4 flex items-end gap-2">
+        <div className="tutorial-nimbus mb-[-10px] ml-4 flex items-end gap-2">
           <Nimbus size={140} mood={step.mood} className="bob" />
         </div>
         <div className="card p-5">

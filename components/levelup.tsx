@@ -54,10 +54,10 @@ export function LevelUpOverlay({ level, name, onDone }: { level: number; name: s
           <Sparkle size={p.s} color={i % 2 ? "#ffffff" : "#fde68a"} />
         </span>
       ))}
-      <div data-nimbus className="relative">
+      <div data-nimbus className="levelup-nimbus relative">
         <Nimbus size={170} mood="wow" />
       </div>
-      <div data-badge className="relative -mt-3 grid h-28 w-28 place-items-center rounded-full border-[5px] border-[var(--ink)] bg-[var(--sun)] shadow-2xl">
+      <div data-badge className="levelup-badge relative -mt-3 grid h-28 w-28 place-items-center rounded-full border-[5px] border-[var(--ink)] bg-[var(--sun)] shadow-2xl">
         <div className="text-center leading-none text-[var(--ink)]">
           <div className="text-xs font-extrabold tracking-widest">LEVEL</div>
           <div className="font-display text-5xl">{level}</div>
