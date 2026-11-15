@@ -1,6 +1,7 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { playMusic, preloadMusic, setMusicVolume, sfx, Track, unlockAudio } from "@/lib/client/audio";
+import { initCloud } from "@/lib/client/cloud";
 import { setPrevVisit } from "@/lib/client/nav";
 import { getState, levelInfo, needsUsername, update, useStore } from "@/lib/client/store";
 import { Board } from "./board";
@@ -62,6 +63,11 @@ export default function App() {
   );
 
   useEffect(() => setMusicVolume(settings.music), [settings.music]);
+
+  // if this phone signed in to the cloud before, reconnect quietly at launch
+  useEffect(() => {
+    void initCloud();
+  }, []);
 
   // level-up celebration
   const lastLevel = useRef<number | null>(null);

@@ -31,6 +31,8 @@ export type Note = {
   rot: number;
   color: number;
   createdAt: number;
+  /** Last time the note was changed (for cloud sync: the newest change wins). */
+  updatedAt?: number;
   fresh?: boolean;
 };
 
@@ -98,6 +100,14 @@ const DEFAULT: State = {
 let state: State = DEFAULT;
 let loaded = false;
 const listeners = new Set<() => void>();
+
+/** Lets the cloud sync watch for any change to the saved state. Returns an unsubscribe function. */
+export function subscribeStore(cb: () => void) {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+}
 
 function load() {
   if (loaded || typeof window === "undefined") return;
@@ -209,6 +219,7 @@ export async function addNote(title: string, detail: NoteDetail, color?: number,
     rot: Math.random() * 10 - 5,
     color: color ?? Math.floor(Math.random() * NOTE_COLOR_COUNT),
     createdAt: Date.now(),
+    updatedAt: Date.now(),
     fresh: true,
   };
   await set(`note:${id}`, detail);
@@ -221,7 +232,7 @@ export function getNoteDetail(id: string) {
 }
 
 export function patchNote(id: string, patch: Partial<Note>) {
-  update((s) => ({ ...s, notes: s.notes.map((n) => (n.id === id ? { ...n, ...patch } : n)) }));
+  update((s) => ({ ...s, notes: s.notes.map((n) => (n.id === id ? { ...n, ...patch, updatedAt: Date.now() } : n)) }));
 }
 
 export function removeNote(id: string): Note | undefined {
@@ -311,4 +322,9 @@ export function needsUsername(): boolean {
 /** Signs out of the leaderboard account. Notes, XP and settings stay on this phone. */
 export function signOut() {
   update((s) => ({ ...s, profile: null, guest: true, lastRank: null }));
+}
+
+/** Saves a note's photo and facts on this device (used when notes arrive from the cloud). */
+export async function saveNoteDetail(id: string, detail: NoteDetail) {
+  await set(`note:${id}`, detail);
 }

@@ -19,6 +19,9 @@ npm run dev                  # http://localhost:3000
 ```
 In a Claude Code cloud session, the key is injected by the network proxy: set `GEMINI_API_KEY=proxy-injected` in `.env.local` and run `npm run dev:cloud` (Node's fetch needs `NODE_USE_ENV_PROXY=1` to use the proxy).
 
+## Cloud sync (Firebase)
+Sign in with Google in Settings, then Cloud sync. Notes (with photos), XP, streak, settings and the leaderboard account are saved to Firestore (`users/{uid}` and `users/{uid}/notes/{id}`) and follow you to any phone. Firebase web config is public by design; the Firestore security rules (each user can only read and write their own `users/{uid}` data) are what protect it. Override the config with `NEXT_PUBLIC_FIREBASE_*` environment variables if you move to another Firebase project.
+
 ## Leaderboard setup (Vercel)
 The Hunt leaderboard and usernames need a small database so every phone sees the same scores.
 1. In Vercel, open your project, then **Storage**, then **Create Database**, then **Upstash** (Redis, free plan).
