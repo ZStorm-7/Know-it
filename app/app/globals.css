@@ -251,6 +251,19 @@ textarea {
   transform: rotate(45deg);
   border-bottom-right-radius: 5px;
 }
+/* tail on the left, pointing at Nimbus */
+.bubble-left::after {
+  left: -13px;
+  top: 26px;
+  bottom: auto;
+  width: 20px;
+  height: 20px;
+  border-right: none;
+  border-bottom: 3px solid var(--ink);
+  border-left: 3px solid var(--ink);
+  border-bottom-right-radius: 0;
+  border-bottom-left-radius: 5px;
+}
 .typing span {
   display: inline-block;
   width: 8px;

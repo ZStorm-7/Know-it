@@ -101,7 +101,8 @@ export function Toaster() {
     pushToast = (t) => {
       const id = Date.now() + Math.random();
       setItems((s) => [...s.slice(-2), { ...t, id }]);
-      setTimeout(() => setItems((s) => s.filter((x) => x.id !== id)), t.action ? 5000 : 2600);
+      const ms = t.action ? 5000 : Math.max(2600, t.text.length * 55);
+      setTimeout(() => setItems((s) => s.filter((x) => x.id !== id)), ms);
     };
     return () => {
       pushToast = null;

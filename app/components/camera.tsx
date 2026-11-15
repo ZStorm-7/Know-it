@@ -8,7 +8,7 @@ import { getState, update, useStore } from "@/lib/client/store";
 import { Nimbus } from "./art";
 import { Btn, IconBtn } from "./ui";
 
-type CamState = "explain" | "starting" | "live" | "blocked" | "unsupported";
+type CamState = "explain" | "starting" | "live" | "blocked" | "nocamera" | "unsupported";
 
 export function Camera({
   onCapture,
@@ -34,6 +34,8 @@ export function Camera({
   const stream = useRef<MediaStream | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
   const nativeInput = useRef<HTMLInputElement>(null);
+  // Phones and tablets: the capture input opens the real camera app. Desktops ignore it.
+  const [isPhone] = useState(() => typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches);
 
   const stop = () => {
     stream.current?.getTracks().forEach((t) => t.stop());
@@ -59,7 +61,13 @@ export function Camera({
       setState("live");
     } catch (e) {
       const name = (e as Error)?.name;
-      setState(name === "NotAllowedError" || name === "SecurityError" ? "blocked" : "unsupported");
+      setState(
+        name === "NotAllowedError" || name === "SecurityError"
+          ? "blocked"
+          : name === "NotFoundError" || name === "OverconstrainedError" || name === "NotReadableError"
+            ? "nocamera"
+            : "unsupported",
+      );
     }
   }, [facing]);
 
@@ -176,40 +184,41 @@ export function Camera({
         </div>
       )}
 
-      {/* permission explainer / blocked / unsupported */}
-      {(state === "explain" || state === "blocked" || state === "unsupported") && !preview && (
+      {/* permission explainer / blocked / no camera */}
+      {state !== "live" && state !== "starting" && !preview && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-gradient-to-b from-sky-400 to-indigo-500 p-6">
           <div className="card w-full max-w-sm p-6 text-center">
             <Nimbus size={110} mood={state === "explain" ? "wow" : "sad"} className="bob mx-auto" />
             <h2 className="font-display mt-2 text-2xl">
-              {state === "explain" ? "Let me see!" : state === "blocked" ? "Camera is off" : "No live camera"}
+              {state === "explain" ? "Let me see!" : state === "blocked" ? "Camera is blocked" : "No camera found"}
             </h2>
             <p className="mt-2 text-[0.95rem] text-[var(--ink-soft)]">
               {state === "explain"
                 ? "Know it uses your camera to spot objects. Photos stay on your phone, except the one I look at."
                 : state === "blocked"
-                  ? "Your browser blocked the camera. Turn it on in your browser or phone settings, or snap a photo below."
-                  : "Your browser can't open a live camera here. No problem, you can still snap or pick a photo."}
+                  ? "Your browser said no to the camera. Allow camera access in your browser settings, then tap Try again."
+                  : isPhone
+                    ? "I couldn't open a live camera in the app, but your phone's camera app still works."
+                    : "This device has no camera I can use. Connect one and tap Try again, or pick a photo from your files."}
             </p>
             <div className="mt-5 flex flex-col gap-3">
-              {state === "explain" ? (
+              {state === "explain" && (
                 <Btn variant="mint" className="h-14 text-lg" onClick={allow}>
                   Turn on camera
                 </Btn>
-              ) : (
-                <>
-                  <Btn variant="mint" className="h-14 text-lg" onClick={() => nativeInput.current?.click()}>
-                    Snap a photo
-                  </Btn>
-                  {state === "blocked" && (
-                    <Btn variant="white" className="h-12" onClick={() => setState("starting")}>
-                      Try again
-                    </Btn>
-                  )}
-                </>
+              )}
+              {state !== "explain" && (
+                <Btn variant="mint" className="h-14 text-lg" onClick={() => setState("starting")}>
+                  Try again
+                </Btn>
+              )}
+              {state !== "explain" && isPhone && (
+                <Btn variant="sun" className="h-12" onClick={() => nativeInput.current?.click()}>
+                  Open phone camera
+                </Btn>
               )}
               <Btn variant="white" className="h-12" onClick={() => fileInput.current?.click()}>
-                Pick from photos
+                {isPhone ? "Pick from photos" : "Pick a photo from files"}
               </Btn>
             </div>
           </div>

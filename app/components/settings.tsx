@@ -129,7 +129,7 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
           <div className="mb-1 font-extrabold text-[var(--card-ink)]">Credits</div>
           Built with Claude Code · AI by Gemini (facts can be wrong).
           <br />
-          Music: Volodymyr Piddubnyk and Giuseppe Rizzo via Storyblocks.
+          Music via Storyblocks (Joyful Ride, Upbeat Cheerful Optimistic Jazz, Comedy Background Detective, Jolly Stomping Rhythm).
           <br />
           Fonts: Shrikhand, Sour Gummy and Caveat (SIL Open Font License).
           <br />

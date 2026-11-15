@@ -32,7 +32,7 @@ Theme: Elevate the Ordinary. Mobile-only installable PWA (Next.js). Motto: "Lear
 
 ## Music (Storyblocks, loop per place, crossfade)
 - Home: Upbeat Cheerful Optimistic Jazz
-- Facts: Bitsy Spider – Children's Story Background
+- Facts: Joyful Ride
 - Hunt: Comedy Background Detective Cartoon
 - Bulletin Board: Jolly Stomping Rhythm
 (Check the Storyblocks license allows embedding in a public app.)

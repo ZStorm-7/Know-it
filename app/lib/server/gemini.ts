@@ -14,10 +14,25 @@ type Part =
 
 export class GeminiError extends Error {
   status: number;
-  constructor(message: string, status = 502) {
+  /** Safe, friendly text to show the user. */
+  userMessage?: string;
+  constructor(message: string, status = 502, userMessage?: string) {
     super(message);
     this.status = status;
+    this.userMessage = userMessage;
   }
+}
+
+function explain(status: number, body: string): { status: number; user: string } {
+  const b = body.toLowerCase();
+  if (b.includes("api key") || b.includes("api_key") || status === 401 || status === 403)
+    return { status: 401, user: "The Gemini API key is invalid or not allowed. Check GEMINI_API_KEY in app/.env.local, then restart the server." };
+  if (status === 402 || b.includes("credits") || b.includes("billing"))
+    return { status: 402, user: "The Gemini API key is out of credits. Add billing or credits in Google AI Studio, or use another key." };
+  if (status === 429 || b.includes("quota") || b.includes("resource_exhausted"))
+    return { status: 429, user: "The AI is busy or the free quota ran out. Wait a minute and try again." };
+  if (status === 404) return { status: 502, user: "This Gemini model is not available for your key." };
+  return { status: 502, user: "The AI service had a hiccup. Please try again." };
 }
 
 export async function geminiJSON<T>(opts: {
@@ -28,8 +43,9 @@ export async function geminiJSON<T>(opts: {
   temperature?: number;
   signal?: AbortSignal;
 }): Promise<T> {
-  const key = process.env.GEMINI_API_KEY;
-  if (!key) throw new GeminiError("Server is missing GEMINI_API_KEY", 500);
+  const key = process.env.GEMINI_API_KEY?.trim();
+  if (!key || key === "your-gemini-key-here")
+    throw new GeminiError("Server is missing GEMINI_API_KEY", 500, "No Gemini API key found. Put GEMINI_API_KEY=your-key in app/.env.local, then restart the server.");
 
   const content: Part[] = [{ type: "text", text: opts.user }];
   if (opts.imageDataUrl) {
@@ -56,7 +72,8 @@ export async function geminiJSON<T>(opts: {
 
   if (!res.ok) {
     const text = await res.text().catch(() => "");
-    throw new GeminiError(`Gemini ${res.status}: ${text.slice(0, 300)}`, res.status === 429 ? 429 : 502);
+    const why = explain(res.status, text);
+    throw new GeminiError(`Gemini ${res.status}: ${text.slice(0, 300)}`, why.status, why.user);
   }
   const data = await res.json();
   const raw: string = data?.choices?.[0]?.message?.content ?? "";
@@ -74,16 +91,16 @@ function parseJSON<T>(raw: string): T {
         return JSON.parse(raw.slice(start, end + 1)) as T;
       } catch {}
     }
-    throw new GeminiError("AI returned an unreadable answer");
+    throw new GeminiError("AI returned an unreadable answer", 502, "Nimbus got a garbled answer. Please try again.");
   }
 }
 
 // Validates a base64 JPEG/PNG/WebP data URL and its size (~2.5 MB max).
 export function checkImage(dataUrl: unknown): string {
   if (typeof dataUrl !== "string" || !/^data:image\/(jpeg|png|webp);base64,/.test(dataUrl)) {
-    throw new GeminiError("A photo is required", 400);
+    throw new GeminiError("A photo is required", 400, "Please take or pick a photo first.");
   }
-  if (dataUrl.length > 3_500_000) throw new GeminiError("Photo is too large", 413);
+  if (dataUrl.length > 3_500_000) throw new GeminiError("Photo is too large", 413, "That photo is too big. Try another one.");
   return dataUrl;
 }
 

@@ -10,15 +10,15 @@ import { Logo } from "./logo";
 import { Btn, IconBtn } from "./ui";
 
 const FALLBACK = [
-  "Your curiosity is basically a superpower. Let's go find something amazing!",
-  "You ask great questions. The world is lucky to have you poking around in it.",
-  "Your brain is extra sparkly today. Let's feed it a fact or two!",
+  "Your curiosity is basically a superpower.",
+  "You ask the kind of questions that make the world more interesting.",
+  "Your brain is extra sparkly today.",
   "You notice things other people miss. That's a real gift.",
-  "You make learning look fun. Ready for a mini adventure?",
-  "Kindness and curiosity? You've got both. Let's explore!",
-  "You have the eyes of an explorer. What will you discover today?",
-  "Every great inventor started just like you: wondering about stuff.",
-];
+  "You make learning look easy and fun.",
+  "Your kindness makes every room a little brighter.",
+  "You have the eyes of a true explorer.",
+  "Your sense of wonder is genuinely inspiring.",
+]
 
 let cachedCompliment: string | null = null;
 
@@ -93,28 +93,30 @@ export function Home() {
         <p className="mt-3 text-center text-[clamp(0.95rem,4vw,1.15rem)] font-bold opacity-95">Learn something real instead of scrolling.</p>
       </div>
 
-      {/* Nimbus + compliment */}
-      <div data-in className="flex flex-1 flex-col justify-center" style={{ minHeight: 0 }}>
-        <div className="bubble mx-auto w-full max-w-md px-5 py-4" style={{ minHeight: "4.6rem" }}>
-          {compliment ? (
-            <p ref={textRef} className="text-[clamp(1rem,4.2vw,1.2rem)] font-bold leading-snug">
-              {compliment.split(" ").map((w, i) => (
-                <span key={i} className="inline-block">
-                  {w}&nbsp;
-                </span>
-              ))}
-            </p>
-          ) : (
-            <div className="typing flex h-8 items-center">
-              <span />
-              <span />
-              <span />
-            </div>
-          )}
-        </div>
-        <div className="mt-3 flex items-center gap-2 pl-3">
-          <Nimbus size={74} className="bob" />
-          <span className="text-sm font-extrabold opacity-90">Nimbus</span>
+      {/* Nimbus + compliment: the speech bubble comes out of Nimbus */}
+      <div data-in className="flex flex-1 items-center justify-center" style={{ minHeight: 0 }}>
+        <div className="flex w-full max-w-md items-start gap-3">
+          <div className="flex shrink-0 flex-col items-center pt-1">
+            <Nimbus size={86} className="bob" />
+            <span className="mt-0.5 text-xs font-extrabold opacity-90">Nimbus</span>
+          </div>
+          <div className="bubble bubble-left min-w-0 flex-1 px-4 py-3.5" style={{ minHeight: "4.4rem" }}>
+            {compliment ? (
+              <p ref={textRef} className="text-[clamp(0.98rem,4.1vw,1.15rem)] font-bold leading-snug">
+                {compliment.split(" ").map((w, i) => (
+                  <span key={i} className="inline-block">
+                    {w}&nbsp;
+                  </span>
+                ))}
+              </p>
+            ) : (
+              <div className="typing flex h-8 items-center">
+                <span />
+                <span />
+                <span />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

@@ -49,7 +49,7 @@ export type State = {
 const KEY = "knowit:v1";
 
 export const DEFAULT_SETTINGS: Settings = {
-  theme: "system",
+  theme: "light",
   music: 0.35,
   sfx: true,
   haptics: true,
@@ -82,13 +82,15 @@ function load() {
     if (raw) {
       const parsed = JSON.parse(raw);
       state = { ...DEFAULT, ...parsed, settings: { ...DEFAULT_SETTINGS, ...parsed.settings } };
+      // v2: light mode became the default; switch existing installs once
+      if (!parsed.lightDefault) state = { ...state, settings: { ...state.settings, theme: "light" } };
     }
   } catch {}
 }
 
 function save() {
   try {
-    localStorage.setItem(KEY, JSON.stringify(state));
+    localStorage.setItem(KEY, JSON.stringify({ ...state, lightDefault: true }));
   } catch {}
 }
 

@@ -43,9 +43,13 @@ export async function handle(
     }
     const status = e instanceof GeminiError ? e.status : 500;
     console.error("[api]", e);
-    return NextResponse.json(
-      { error: status === 429 ? "The AI is busy right now. Try again in a moment." : "Nimbus got confused. Please try again." },
-      { status },
-    );
+    const isNetwork = (e as Error)?.message?.includes("fetch failed");
+    const msg =
+      e instanceof GeminiError && e.userMessage
+        ? e.userMessage
+        : isNetwork
+          ? "The server can't reach the AI. Check your internet connection."
+          : "Something went wrong on the server. Please try again.";
+    return NextResponse.json({ error: msg }, { status });
   }
 }

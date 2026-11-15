@@ -220,7 +220,9 @@ export function Hunt() {
       showFeedback({ photo, match: r.match, object: r.object, box: r.box, comment: r.comment, wow: r.wow });
     } catch (e) {
       if ((e as Error)?.name === "AbortError") return;
-      // network trouble is not the player's fault: resume with the same time left
+      // AI or network trouble is not the player's fault: explain, then resume with the same time left
+      sfx("buzz");
+      toast(e instanceof Error && e.message ? e.message : "Couldn't check that photo. Try again!");
       deadline.current = performance.now() + remaining;
       setPhase("play");
     }

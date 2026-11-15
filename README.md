@@ -29,7 +29,7 @@ In a Claude Code cloud session, the key is injected by the network proxy: set `G
 Next.js 16, React 19, Tailwind 4, GSAP, Gemini (`gemini-3.5-flash` for facts, `gemini-3.5-flash-lite` for detection, Hunt and compliments) via the OpenAI-compatible endpoint. Photos and notes are stored on the device (IndexedDB + localStorage).
 
 ## Credits
-Built with Claude Code · AI by Gemini. Music by Volodymyr Piddubnyk and Giuseppe Rizzo via Storyblocks. Fonts: Shrikhand, Sour Gummy, Caveat (SIL OFL). Sound effects are synthesized in code.
+Built with Claude Code · AI by Gemini. Music via Storyblocks (Joyful Ride, Upbeat Cheerful Optimistic Jazz, Comedy Background Detective, Jolly Stomping Rhythm). Fonts: Shrikhand, Sour Gummy, Caveat (SIL OFL). Sound effects are synthesized in code.
 
 ## Judging criteria
 Creativity and Originality · Technical Difficulty · Functionality · UI/UX · Theme Relevance · Presentation and Pitch
