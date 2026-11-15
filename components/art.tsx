@@ -160,3 +160,24 @@ export function Sparkle({ size = 18, color = "#fde68a", className = "" }: { size
 }
 
 export const NOTE_COLORS = ["#fde047", "#f9a8d4", "#86efac", "#7dd3fc", "#fdba74"];
+
+/** Max characters on a sticky note title. */
+export const NOTE_MAX_CHARS = 24;
+
+/** Font size (px) for a sticky-note title on a 170px note; shrinks as the title gets longer. */
+export function noteFontSize(len: number): number {
+  if (len <= 8) return 44;
+  if (len <= 12) return 38;
+  if (len <= 16) return 33;
+  if (len <= 20) return 29;
+  return 26;
+}
+
+/** Trim a title to the limit without cutting a word in half when possible. */
+export function clampTitle(t: string): string {
+  const clean = t.replace(/\s+/g, " ").trim();
+  if (clean.length <= NOTE_MAX_CHARS) return clean;
+  const cut = clean.slice(0, NOTE_MAX_CHARS);
+  const sp = cut.lastIndexOf(" ");
+  return (sp > 8 ? cut.slice(0, sp) : cut).trim();
+}

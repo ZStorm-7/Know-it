@@ -97,8 +97,8 @@ export function Home() {
       {/* Nimbus + compliment: the speech bubble comes out of Nimbus */}
       <div data-in className="flex flex-1 items-center justify-center" style={{ minHeight: 0 }}>
         <div className="flex w-full max-w-md items-start gap-3">
-          <div className="flex shrink-0 flex-col items-center pt-1">
-            <Nimbus size={86} className="bob" />
+          <div className="flex shrink-0 flex-col items-center pt-1" style={{ width: "clamp(112px, 33vw, 150px)" }}>
+            <Nimbus size={140} className="bob max-w-full" />
             <span className="mt-0.5 text-xs font-extrabold opacity-90">Nimbus</span>
           </div>
           <div className="bubble bubble-left min-w-0 flex-1 px-4 py-3.5" style={{ minHeight: "4.4rem" }}>

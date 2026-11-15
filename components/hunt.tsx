@@ -343,7 +343,7 @@ function FeedbackView({ fb, lives, onContinue }: { fb: Feedback; lives: number; 
         {fb.photo ? (
           <PhotoBox src={fb.photo} maxHeight="38dvh" outlines={fb.box ? [{ box: fb.box, label: fb.object, color: fb.match ? "#86efac" : "#fdba74" }] : []} />
         ) : (
-          <Nimbus size={120} mood="sad" className="bob" />
+          <Nimbus size={160} mood="sad" className="bob" />
         )}
         <p className="text-center text-lg font-bold">{fb.comment}</p>
         {fb.match && fb.wow && (
@@ -378,7 +378,7 @@ function Intro({ best, onStart, onBack }: { best: number; onStart: () => void; o
       </div>
       <div className="flex flex-1 flex-col items-center justify-center gap-5">
         <div data-in>
-          <Nimbus size={130} mood="wow" className="bob" />
+          <Nimbus size={170} mood="wow" className="bob" />
         </div>
         <div data-in className="card w-full max-w-md p-5">
           <ul className="flex flex-col gap-3 text-[1.02rem] font-bold">

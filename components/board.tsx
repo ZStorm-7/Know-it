@@ -1,6 +1,6 @@
 "use client";
 import gsap from "gsap";
-import { Check, Home as HomeIcon, Maximize, Minus, Pencil, Plus, Trash2 } from "lucide-react";
+import { Check, Home as HomeIcon, Maximize, Minus, Pencil, Plus, Trash2, Undo2 } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { haptic, sfx } from "@/lib/client/audio";
 import {
@@ -16,11 +16,14 @@ import {
   useStore,
 } from "@/lib/client/store";
 import { useNav } from "./app";
-import { Nimbus, NOTE_COLORS, Pushpin } from "./art";
+import { Nimbus, NOTE_COLORS, NOTE_MAX_CHARS, noteFontSize, Pushpin } from "./art";
 import { PhotoBox } from "./photo-box";
 import { Btn, IconBtn, Sheet, toast } from "./ui";
 
-const NOTE = 150;
+const NOTE = 170;
+// cork grain tiles and offsets (must match .cork in globals.css)
+const TILES = [22, 34, 58];
+const OFFS = [[0, 0], [10, 14], [26, 6]];
 const MIN_Z = 0.35;
 const MAX_Z = 2.6;
 const LONG_PRESS = 380;
@@ -39,11 +42,26 @@ export function Board() {
   const [openId, setOpenId] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
 
+  // What is on screen right now. Notes AND the cork texture follow it, so the whole board pans and zooms.
+  const shown = useRef<View>({ x: 0, y: 0, s: 1 });
+  const paint = () => {
+    const v = shown.current;
+    if (world.current) gsap.set(world.current, { x: v.x, y: v.y, scale: v.s });
+    const el = root.current;
+    if (el) {
+      el.style.backgroundSize = TILES.map((t) => `${t * v.s}px ${t * v.s}px`).join(", ");
+      el.style.backgroundPosition = OFFS.map(([ox, oy]) => `${v.x + ox * v.s}px ${v.y + oy * v.s}px`).join(", ");
+    }
+  };
   const apply = (animate = false) => {
     const v = view.current;
-    if (!world.current) return;
-    if (animate) gsap.to(world.current, { x: v.x, y: v.y, scale: v.s, duration: 0.5, ease: "power3.out" });
-    else gsap.set(world.current, { x: v.x, y: v.y, scale: v.s });
+    gsap.killTweensOf(shown.current);
+    if (animate) {
+      gsap.to(shown.current, { x: v.x, y: v.y, s: v.s, duration: 0.5, ease: "power3.out", onUpdate: paint });
+    } else {
+      shown.current = { ...v };
+      paint();
+    }
   };
 
   const fit = useCallback((animate = true) => {
@@ -63,6 +81,8 @@ export function Board() {
       view.current = { s, x: w / 2 - ((minX + maxX) / 2) * s, y: h / 2 + 10 - ((minY + maxY) / 2) * s };
     }
     apply(animate);
+  // apply only touches refs, so the first-render closure is always correct
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useLayoutEffect(() => {
@@ -330,7 +350,7 @@ export function Board() {
 
       {notes.length === 0 && (
         <div className="pointer-events-none absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 px-8 text-center">
-          <Nimbus size={130} mood="think" className="bob" />
+          <Nimbus size={170} mood="think" className="bob" />
           <div className="card pointer-events-auto max-w-xs p-5">
             <p className="text-lg font-bold">Your board is empty!</p>
             <p className="mt-1 text-[var(--ink-soft)]">Snap an object in Facts and its sticky note will land here.</p>
@@ -381,8 +401,7 @@ export function Board() {
 }
 
 function StickyNote({ note }: { note: Note }) {
-  const len = note.title.length;
-  const fontSize = len > 22 ? 24 : len > 14 ? 28 : 34;
+  const fontSize = noteFontSize(note.title.length);
   return (
     <div
       data-note={note.id}
@@ -392,7 +411,7 @@ function StickyNote({ note }: { note: Note }) {
       <div data-pin className="absolute left-1/2 top-[-16px] z-10 -translate-x-1/2">
         <Pushpin size={30} />
       </div>
-      <div className="sticky" style={{ background: NOTE_COLORS[note.color % NOTE_COLORS.length], width: NOTE, height: NOTE, fontSize }}>
+      <div className="sticky" style={{ background: NOTE_COLORS[note.color % NOTE_COLORS.length], width: NOTE, height: NOTE, fontSize, lineHeight: 1.02 }}>
         {note.title}
       </div>
     </div>
@@ -448,7 +467,7 @@ function NoteSheet({ id, onClose, onUnpin }: { id: string | null; onClose: () =>
                 <input
                   autoFocus
                   value={name}
-                  maxLength={40}
+                  maxLength={NOTE_MAX_CHARS}
                   onChange={(e) => setName(e.target.value)}
                   onKeyDown={(e) => e.key === "Enter" && save()}
                   className="font-hand min-w-0 flex-1 rounded-xl border-[2.5px] border-[var(--ink)] bg-white px-3 py-1 text-[2rem] font-bold text-[var(--ink)] outline-none"
@@ -468,6 +487,25 @@ function NoteSheet({ id, onClose, onUnpin }: { id: string | null; onClose: () =>
               </>
             )}
           </div>
+          {editing && (
+            <div className="mt-1 text-right text-xs font-bold text-[var(--ink-soft)]">
+              {name.length}/{NOTE_MAX_CHARS} characters
+            </div>
+          )}
+          {shown.suggested && shown.title !== shown.suggested && (
+            <button
+              className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full border-2 border-[var(--ink)] bg-[var(--sun)] px-3 py-1 text-sm font-extrabold text-[var(--ink)] active:scale-95"
+              onClick={() => {
+                patchNote(shown.id, { title: shown.suggested });
+                setEditingId(null);
+                sfx("pop", 1.2);
+                toast("Back to the suggested name");
+              }}
+            >
+              <Undo2 size={15} strokeWidth={3} />
+              <span className="truncate">Revert to suggested: {shown.suggested}</span>
+            </button>
+          )}
           <div className="mt-1 text-sm font-bold capitalize text-[var(--ink-soft)]">{shown.object}</div>
 
           <ol className="mt-4 flex flex-col gap-2.5">

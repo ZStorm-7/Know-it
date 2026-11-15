@@ -1,4 +1,4 @@
-# Know it
+# Curio
 
 **Learn something extraordinary about the ordinary.** Swap your next scroll for a snap. Snap any everyday object and Nimbus the cloud tells you its secrets.
 

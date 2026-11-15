@@ -1,4 +1,4 @@
-# Know it: agreed spec
+# Curio: agreed spec
 
 Theme: Elevate the Ordinary. Mobile-only installable PWA (Next.js). Motto: "Learn something extraordinary about the ordinary." Scrolling line: "Swap your next scroll for a snap."
 
@@ -17,7 +17,7 @@ Theme: Elevate the Ordinary. Mobile-only installable PWA (Next.js). Motto: "Lear
 - Badge: "Built with Claude Code · AI by Gemini".
 
 ## Screens
-1. Splash: cloud loader animation, "Know it" pops in, "Tap to start" (unlocks audio).
+1. Splash: cloud loader animation, "Curio" pops in, "Tap to start" (unlocks audio).
 2. Cloud transition between every screen: clouds rise to cover, screen swaps, clouds keep rising to reveal.
 3. Home: logo, chat bubble from Nimbus with an AI compliment (fallback list if slow), brain level bar, motto, buttons Facts / Hunt Mode / Bulletin Board, settings gear, badge.
 4. Facts: first-visit tutorial in a fun text box (Next/Skip, replayable). Camera-permission explainer, styled live viewfinder, shutter + flash, retake/use, upload fallback.

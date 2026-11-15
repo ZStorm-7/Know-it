@@ -7,7 +7,7 @@ import { haptic, sfx } from "@/lib/client/audio";
 import { shrinkDataUrl } from "@/lib/client/image";
 import { addNote, addXp, Box, getState, NOTE_COLOR_COUNT, objectKey, rememberFacts, update, useStore } from "@/lib/client/store";
 import { useNav } from "./app";
-import { CloudLoader, Nimbus, NOTE_COLORS, Pushpin } from "./art";
+import { clampTitle, CloudLoader, Nimbus, NOTE_COLORS, noteFontSize, Pushpin } from "./art";
 import { Camera } from "./camera";
 import { PhotoBox } from "./photo-box";
 import { Btn, confetti, CountUp, IconBtn, toast } from "./ui";
@@ -113,7 +113,7 @@ export function Facts() {
           photo,
           box: obj.box,
           object: res.object || obj.name,
-          title: res.title,
+          title: clampTitle(res.title) || clampTitle(obj.name),
           facts: res.facts,
           quiz: res.quiz,
           confidence: Math.round((res.confidence + obj.confidence) / 2),
@@ -146,7 +146,7 @@ export function Facts() {
       {phase.k === "error" && (
         <div className="absolute inset-0 z-30 flex items-center justify-center bg-gradient-to-b from-sky-400/90 to-indigo-600/90 p-6">
           <div className="card w-full max-w-sm p-6 text-center">
-            <Nimbus size={110} mood="sad" className="bob mx-auto" />
+            <Nimbus size={150} mood="sad" className="bob mx-auto" />
             <p className="mt-3 text-lg font-bold">{phase.msg}</p>
             <div className="mt-5 flex flex-col gap-3">
               <Btn variant="mint" className="h-14 text-lg" onClick={() => setPhase({ k: "camera" })}>
@@ -200,7 +200,7 @@ function Tutorial({ onDone }: { onDone: () => void }) {
     <div className="absolute inset-0 z-40 flex flex-col justify-end bg-slate-950/55 p-5" style={{ paddingBottom: "max(28px, env(safe-area-inset-bottom))" }}>
       <div ref={box} className="mx-auto w-full max-w-md">
         <div className="mb-[-10px] ml-4 flex items-end gap-2">
-          <Nimbus size={96} mood={step.mood} className="bob" />
+          <Nimbus size={140} mood={step.mood} className="bob" />
         </div>
         <div className="card p-5">
           <div className="mb-2 flex items-center justify-between">
@@ -276,7 +276,7 @@ function Choose({ photo, objects, onPick, onRetake }: { photo: string; objects: 
   return (
     <div ref={root} className="absolute inset-0 z-30 flex flex-col items-center gap-4 overflow-y-auto px-5 pt-6" style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}>
       <div data-in className="flex w-full max-w-md items-center gap-3">
-        <Nimbus size={80} mood="think" className="bob shrink-0" />
+        <Nimbus size={110} mood="think" className="bob shrink-0" />
         <div className="bubble flex-1 px-4 py-3 text-[1rem] font-bold after:hidden">I see a few things! Tap the one you want to learn about.</div>
       </div>
       <div data-in className="w-full max-w-md">
@@ -532,7 +532,7 @@ function PinFly({ title, color, target, onDone }: { title: string; color: number
         <div ref={pin} className="absolute left-1/2 top-[-18px] z-10 -translate-x-1/2">
           <Pushpin size={38} />
         </div>
-        <div className="sticky" style={{ background: NOTE_COLORS[color], width: 190, height: 190, fontSize: 34 }}>
+        <div className="sticky" style={{ background: NOTE_COLORS[color], width: 230, height: 230, fontSize: Math.round((noteFontSize(title.length) * 230) / 170) }}>
           {title}
         </div>
       </div>

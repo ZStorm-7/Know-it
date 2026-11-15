@@ -8,6 +8,15 @@ const STYLES: Record<string, string> = {
   nerdy: "Write for a science lover: precise, with a bit more depth (still short).",
 };
 
+/** Keep sticky-note names short enough to fit the note (24 characters), cutting at a word. */
+function clampTitle(t: string): string {
+  const clean = t.replace(/\s+/g, " ").trim();
+  if (clean.length <= 24) return clean;
+  const cut = clean.slice(0, 24);
+  const sp = cut.lastIndexOf(" ");
+  return (sp > 8 ? cut.slice(0, sp) : cut).trim();
+}
+
 export async function POST(req: NextRequest) {
   return handle(req, async (body) => {
     const image = checkImage(body.image);
@@ -24,7 +33,7 @@ Return JSON only:
 {"object": string, "title": string, "facts": string[], "quiz": {"question": string, "options": string[], "answer": number}, "confidence": number}
 Rules:
 - "object": the plain name of the object.
-- "title": a short, charming nickname for this exact object, 2-4 words, like a name written on a sticky note (e.g. "Sir Sips-a-Lot" for a mug). No emojis.
+- "title": a short, charming nickname for this exact object, 2-3 words and at most 24 characters including spaces, like a name written on a sticky note (e.g. "Sir Sips-a-Lot" for a mug). No emojis.
 - "facts": exactly ${count} facts. Each is ONE sentence, max 25 words, about this kind of object: history, science, materials, records, culture or surprising uses.
 - Every fact must be different from each other and from the "already seen" list. Do not rephrase seen facts.
 - Only include well-established facts. Avoid world records, exact statistics, dates or names unless they are famous and certain.
@@ -61,7 +70,7 @@ Already seen facts (do not repeat): ${avoid.length ? JSON.stringify(avoid) : "no
 
     return {
       object: String(out.object ?? target).slice(0, 60),
-      title: String(out.title ?? target).replace(/[^\p{L}\p{N}\s'\-!.,&]/gu, "").slice(0, 40).trim() || target,
+      title: clampTitle(String(out.title ?? target).replace(/[^\p{L}\p{N}\s'\-!.,&]/gu, "")) || clampTitle(target),
       facts,
       quiz,
       confidence: cleanConf(out.confidence),

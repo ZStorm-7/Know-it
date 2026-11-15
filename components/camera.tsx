@@ -188,13 +188,13 @@ export function Camera({
       {state !== "live" && state !== "starting" && !preview && (
         <div className="absolute inset-0 z-20 flex items-center justify-center bg-gradient-to-b from-sky-400 to-indigo-500 p-6">
           <div className="card w-full max-w-sm p-6 text-center">
-            <Nimbus size={110} mood={state === "explain" ? "wow" : "sad"} className="bob mx-auto" />
+            <Nimbus size={150} mood={state === "explain" ? "wow" : "sad"} className="bob mx-auto" />
             <h2 className="font-display mt-2 text-2xl">
               {state === "explain" ? "Let me see!" : state === "blocked" ? "Camera is blocked" : "No camera found"}
             </h2>
             <p className="mt-2 text-[0.95rem] text-[var(--ink-soft)]">
               {state === "explain"
-                ? "Know it uses your camera to spot objects. Photos stay on your phone, except the one I look at."
+                ? "Curio uses your camera to spot objects. Photos stay on your phone, except the one I look at."
                 : state === "blocked"
                   ? "Your browser said no to the camera. Allow camera access in your browser settings, then tap Try again."
                   : isPhone

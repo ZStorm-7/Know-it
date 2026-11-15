@@ -18,6 +18,8 @@ export type Settings = {
 export type Note = {
   id: string;
   title: string;
+  /** The AI's original name, so a renamed note can be reverted. */
+  suggested?: string;
   object: string;
   x: number;
   y: number;
@@ -176,9 +178,10 @@ export async function addNote(title: string, detail: NoteDetail, color?: number)
   const note: Note = {
     id,
     title,
+    suggested: title,
     object: detail.object,
-    x: col * 190 + (Math.random() * 24 - 12),
-    y: row * 200 + (Math.random() * 24 - 12),
+    x: col * 215 + (Math.random() * 24 - 12),
+    y: row * 235 + (Math.random() * 24 - 12),
     rot: Math.random() * 10 - 5,
     color: color ?? Math.floor(Math.random() * NOTE_COLOR_COUNT),
     createdAt: Date.now(),
