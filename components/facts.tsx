@@ -74,11 +74,21 @@ export function Facts() {
     try {
       let det = await api.detect(photo, ctrl.signal);
       if (det.objects.length === 0) det = await api.detect(photo, ctrl.signal); // the AI sometimes misses: look once more
+      if (det.objects.length === 0 && det.hasPerson) {
+        // a person in the photo: Nimbus teaches general facts about humans (it never says who they are)
+        await learn(photo, { name: "person", box: null, confidence: 85 }, ctrl);
+        return;
+      }
       if (det.objects.length === 0) {
         // nothing found: let the player tell Nimbus what it is
         sfx("boing");
         setPhase({ k: "choose", photo, objects: [] });
         return;
+      }
+      // people are fine too: if the AI saw a person but listed only things, add "person" as a choice
+      if (det.hasPerson && !det.objects.some((o) => /person|people|hand|face|human/i.test(o.name))) {
+        const personBox: Box = [40, 40, 960, 960];
+        det = { ...det, objects: [...det.objects, { name: "person", box: personBox, confidence: 70 }].slice(0, 4) };
       }
       const pick = autoPick(det.objects);
       if (pick) await learn(photo, pick, ctrl);
