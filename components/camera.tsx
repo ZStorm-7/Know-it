@@ -222,6 +222,9 @@ export function Camera({
               <Btn variant="white" className="h-[50px]" onClick={() => fileInput.current?.click()}>
                 {isPhone ? "Pick from photos" : "Pick a photo from files"}
               </Btn>
+              <button className="mx-auto min-h-[44px] px-4 text-sm font-extrabold underline" onClick={onBack}>
+                {state === "explain" ? "Not now, go back" : "Go back"}
+              </button>
             </div>
           </div>
         </div>
