@@ -3,13 +3,14 @@ import gsap from "gsap";
 import { Home as HomeIcon, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { api } from "@/lib/client/api";
+import { shrinkDataUrl } from "@/lib/client/image";
 import { haptic, sfx } from "@/lib/client/audio";
 import { addXp, Box, getState, update, useStore } from "@/lib/client/store";
 import { useNav } from "./app";
-import { CloudLoader, LifeCloud, Nimbus, TrophyIcon } from "./art";
+import { CloudLoader, LifeCloud, Nimbus, Sparkle, TrophyIcon } from "./art";
 import { Camera } from "./camera";
 import { PhotoBox } from "./photo-box";
-import { Btn, confetti, IconBtn } from "./ui";
+import { Btn, confetti, IconBtn, toast } from "./ui";
 
 const MAX_LIVES = 3;
 
@@ -42,7 +43,21 @@ async function fetchChallenge(level: number, used: string[]): Promise<string> {
   return list[Math.floor(Math.random() * list.length)];
 }
 
-type Feedback = { photo: string; match: boolean; object: string; box: Box | null; comment: string; timeout?: boolean };
+// Theme: Elevate the Ordinary. Every find lifts an ordinary object into something remarkable.
+export const TIERS = [
+  { name: "Ordinary", from: 1, bg: "#e0f2fe", fg: "#0c4a6e", ring: "#38bdf8" },
+  { name: "Remarkable", from: 4, bg: "#fbcfe8", fg: "#831843", ring: "#ff6fae" },
+  { name: "Legendary", from: 8, bg: "#fde68a", fg: "#78350f", ring: "#f59e0b" },
+] as const;
+
+export function tierOf(level: number) {
+  let t: (typeof TIERS)[number] = TIERS[0];
+  for (const x of TIERS) if (level >= x.from) t = x;
+  return t;
+}
+
+type Elevated = { object: string; wow: string; thumb: string };
+type Feedback = { photo: string; match: boolean; object: string; box: Box | null; comment: string; wow?: string; timeout?: boolean };
 type Phase = "intro" | "loading" | "play" | "checking" | "feedback" | "over";
 
 export function Hunt() {
@@ -60,6 +75,7 @@ export function Hunt() {
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [checkingPhoto, setCheckingPhoto] = useState<string | null>(null);
   const [newBest, setNewBest] = useState(false);
+  const [elevated, setElevated] = useState<Elevated[]>([]);
 
   const used = useRef<string[]>([]);
   const prefetch = useRef<{ same?: Promise<string>; next?: Promise<string> }>({});
@@ -68,6 +84,7 @@ export function Hunt() {
   const lastTick = useRef(0);
   const state = useRef({ found: 0, lives: MAX_LIVES });
   const feedbackRef = useRef<Feedback | null>(null);
+  const lastTier = useRef<string>("Ordinary");
 
   const level = found + 1 + offset;
 
@@ -86,6 +103,15 @@ export function Hunt() {
       lastTick.current = secs;
       setPhase("play");
       sfx("boing");
+      const tier = tierOf(lvl);
+      if (tier.name !== lastTier.current) {
+        lastTier.current = tier.name;
+        setTimeout(() => {
+          sfx("levelup");
+          confetti(0.3, 70);
+          toast(`Tier up! Now hunting: ${tier.name}`);
+        }, 350);
+      }
       // prefetch both possible next challenges (after a hit: harder, after a miss: same level)
       prefetch.current = { same: fetchChallenge(lvl, [...used.current]), next: fetchChallenge(lvl + 1, [...used.current]) };
     },
@@ -99,6 +125,8 @@ export function Hunt() {
     setLives(MAX_LIVES);
     setNewBest(false);
     setFeedback(null);
+    setElevated([]);
+    lastTier.current = tierOf(1 + offset).name;
     startRound(1 + offset);
   };
 
@@ -175,6 +203,11 @@ export function Hunt() {
         state.current.found += 1;
         setFound(state.current.found);
         addXp(10);
+        if (r.wow) {
+          shrinkDataUrl(photo, 160)
+            .catch(() => "")
+            .then((thumb) => setElevated((list) => [...list, { object: r.object, wow: r.wow, thumb }]));
+        }
         sfx("chime");
         haptic([20, 40, 20]);
         confetti(0.35, 50);
@@ -184,7 +217,7 @@ export function Hunt() {
         sfx("buzz");
         haptic(80);
       }
-      showFeedback({ photo, match: r.match, object: r.object, box: r.box, comment: r.comment });
+      showFeedback({ photo, match: r.match, object: r.object, box: r.box, comment: r.comment, wow: r.wow });
     } catch (e) {
       if ((e as Error)?.name === "AbortError") return;
       // network trouble is not the player's fault: resume with the same time left
@@ -196,9 +229,9 @@ export function Hunt() {
   // auto-continue after feedback
   useEffect(() => {
     if (phase !== "feedback") return;
-    const t = setTimeout(afterFeedback, 2600);
+    const t = setTimeout(afterFeedback, feedback?.wow ? 6500 : 2600);
     return () => clearTimeout(t);
-  }, [phase, afterFeedback]);
+  }, [phase, afterFeedback, feedback]);
 
   const quit = () => {
     abort.current?.abort();
@@ -206,7 +239,7 @@ export function Hunt() {
   };
 
   if (phase === "intro") return <Intro best={best} onStart={begin} onBack={quit} />;
-  if (phase === "over") return <Over score={found} best={Math.max(best, found)} newBest={newBest} last={feedback} onAgain={begin} onHome={quit} />;
+  if (phase === "over") return <Over score={found} best={Math.max(best, found)} newBest={newBest} last={feedback} elevated={elevated} onAgain={begin} onHome={quit} />;
 
   const urgent = phase === "play" && left <= 5;
 
@@ -260,12 +293,18 @@ export function Hunt() {
 
 function ChallengeCard({ text, level }: { text: string; level: number }) {
   const ref = useRef<HTMLDivElement>(null);
+  const tier = tierOf(level);
   useEffect(() => {
     gsap.fromTo(ref.current, { scale: 0.6, rotation: -6, opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" });
   }, [text]);
   return (
     <div ref={ref} className="card min-w-0 flex-1 px-3.5 py-2.5">
-      <div className="text-[0.7rem] font-extrabold tracking-wider text-[var(--violet)] uppercase">Level {level}</div>
+      <div className="mb-0.5 flex items-center gap-2">
+        <span className="rounded-full px-2 py-[1px] text-[0.68rem] font-extrabold tracking-wider uppercase" style={{ background: tier.bg, color: tier.fg, border: `2px solid ${tier.ring}` }}>
+          {tier.name}
+        </span>
+        <span className="text-[0.7rem] font-extrabold text-[var(--ink-soft)]">Level {level}</span>
+      </div>
       <div className="text-[1.08rem] leading-tight font-extrabold">{text}</div>
     </div>
   );
@@ -305,6 +344,14 @@ function FeedbackView({ fb, lives, onContinue }: { fb: Feedback; lives: number; 
           <Nimbus size={120} mood="sad" className="bob" />
         )}
         <p className="text-center text-lg font-bold">{fb.comment}</p>
+        {fb.match && fb.wow && (
+          <div className="card w-full p-3.5 text-left">
+            <div className="mb-1 flex items-center gap-1.5 text-[0.72rem] font-extrabold tracking-wider text-[var(--violet)] uppercase">
+              <Sparkle size={16} color="#8b5cf6" /> Ordinary, elevated
+            </div>
+            <p className="text-[1.02rem] font-bold leading-snug">{fb.wow}</p>
+          </div>
+        )}
         {!fb.match && <p className="text-sm font-bold opacity-90">{lives > 0 ? `${lives} ${lives === 1 ? "cloud" : "clouds"} left` : "No clouds left!"}</p>}
         <p className="text-xs font-bold opacity-80">Tap to continue</p>
       </div>
@@ -333,9 +380,9 @@ function Intro({ best, onStart, onBack }: { best: number; onStart: () => void; o
         </div>
         <div data-in className="card w-full max-w-md p-5">
           <ul className="flex flex-col gap-3 text-[1.02rem] font-bold">
-            <li>Nimbus gives you something to find.</li>
+            <li>Nimbus names an ordinary thing to find.</li>
             <li>Snap it before the timer runs out.</li>
-            <li>Every find makes the next one harder and faster.</li>
+            <li>Each find is elevated with a wow fact. Climb from Ordinary to Remarkable to Legendary.</li>
             <li>
               <div>You have 3 clouds. Miss, and one floats away.</div>
               <div className="mt-2 flex gap-2">
@@ -359,7 +406,7 @@ function Intro({ best, onStart, onBack }: { best: number; onStart: () => void; o
   );
 }
 
-function Over({ score, best, newBest, last, onAgain, onHome }: { score: number; best: number; newBest: boolean; last: Feedback | null; onAgain: () => void; onHome: () => void }) {
+function Over({ score, best, newBest, last, elevated, onAgain, onHome }: { score: number; best: number; newBest: boolean; last: Feedback | null; elevated: Elevated[]; onAgain: () => void; onHome: () => void }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => {
     gsap.fromTo(ref.current!.querySelectorAll("[data-in]"), { y: 50, opacity: 0, scale: 0.8 }, { y: 0, opacity: 1, scale: 1, duration: 0.6, stagger: 0.1, ease: "back.out(1.8)" });
@@ -385,7 +432,30 @@ function Over({ score, best, newBest, last, onAgain, onHome }: { score: number; 
           New high score!
         </div>
       )}
-      {last?.photo && (
+      <div data-in className="w-full max-w-sm">
+        <div className="mb-2 flex items-center justify-center gap-2 font-display text-xl">
+          <Sparkle size={20} /> {elevated.length > 0 ? `You elevated ${elevated.length} ordinary ${elevated.length === 1 ? "thing" : "things"}` : "Nothing elevated yet"} <Sparkle size={20} />
+        </div>
+        {elevated.length > 0 ? (
+          <ul className="flex flex-col gap-2.5">
+            {elevated.map((e, i) => (
+              <li key={i} className="card flex gap-3 p-2.5">
+                {e.thumb && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={e.thumb} alt="" className="h-16 w-16 shrink-0 rounded-xl border-2 border-[var(--ink)] object-cover" />
+                )}
+                <div className="min-w-0">
+                  <div className="text-sm font-extrabold capitalize">{e.object}</div>
+                  <p className="text-[0.88rem] leading-snug font-semibold text-[var(--ink-soft)]">{e.wow}</p>
+                </div>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <p className="text-center text-sm font-bold opacity-90">Find an everyday object and I&apos;ll show you why it&apos;s remarkable.</p>
+        )}
+      </div>
+      {last?.photo && !last.match && (
         <div data-in className="w-full max-w-sm">
           <p className="mb-2 text-center text-sm font-bold opacity-90">What Nimbus saw last:</p>
           <PhotoBox src={last.photo} maxHeight="30dvh" outlines={last.box ? [{ box: last.box, label: last.object, color: "#fdba74" }] : []} />

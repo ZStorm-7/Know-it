@@ -34,7 +34,7 @@ export const api = {
   challenge: (round: number, used: string[], signal?: AbortSignal) =>
     post<{ challenge: string }>("/api/hunt/challenge", { round, used }, signal),
   check: (image: string, challenge: string, signal?: AbortSignal) =>
-    post<{ match: boolean; object: string; box: Box | null; comment: string; confidence: number }>(
+    post<{ match: boolean; object: string; box: Box | null; comment: string; wow: string; confidence: number }>(
       "/api/hunt/check",
       { image, challenge },
       signal,

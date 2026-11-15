@@ -10,11 +10,12 @@ export async function POST(req: NextRequest) {
       model: MODEL_FAST,
       system: `You judge a friendly scavenger-hunt game. Decide if the photo shows an object that satisfies the challenge.
 Return JSON only:
-{"match": boolean, "object": string, "box_2d": [ymin, xmin, ymax, xmax], "comment": string, "confidence": number}
+{"match": boolean, "object": string, "box_2d": [ymin, xmin, ymax, xmax], "comment": string, "wow": string, "confidence": number}
 - Be fair and a little generous: accept reasonable interpretations and close matches.
 - "object": short name of the object you judged (the best candidate even if it does not match).
 - box_2d: normalized 0-1000 around that object.
 - "comment": one short, upbeat sentence (max 14 words). If it does not match, give a gentle hint. No emojis.
+- "wow": only when match is true, otherwise "". One surprising, well-established fact about this kind of object that shows how remarkable an ordinary thing can be (max 24 words, start with the object, no exact statistics or dates unless famous and certain, no emojis).
 - "confidence": 0-100.
 - If the photo mainly shows a person, match is false and comment asks for an object instead.`,
       user: `Challenge: "${challenge}"`,
@@ -27,6 +28,7 @@ Return JSON only:
       object: String(out.object ?? "something").slice(0, 60),
       box: cleanBox(out.box_2d),
       comment: String(out.comment ?? "").slice(0, 140),
+      wow: out.match === true ? String(out.wow ?? "").slice(0, 220) : "",
       confidence: cleanConf(out.confidence),
     };
   });
