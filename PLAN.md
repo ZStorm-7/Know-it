@@ -24,7 +24,7 @@ Theme: Elevate the Ordinary. Mobile-only installable PWA (Next.js). Motto: "Lear
    - Loading: cloud-fill animation over blurred photo, rotating funny lines, Cancel.
    - If unsure, AI outlines 2–3 candidates and the user taps one.
    - Result: outline draws around the object, name, 5–10 unique facts (never repeats facts already seen for that object). Reveal pacing slow→fast→slow with rising-pitch pops and bounce. XP count-up, one quiz question. Small "AI confidence ~N%" and "This is AI and some facts may be incorrect."
-   - Then the photo becomes a sticky note that is pinned to the Bulletin Board (pin-drop placing animation).
+   - Then a sticky note with the AI nickname (handwriting) is pinned to the Bulletin Board (pin-drop placing animation). Tapping a note shows its photo and facts.
    - Buttons: Main Menu / Take Another Picture.
 5. Hunt Mode: 3 lives, timer pauses while the AI checks. `time = max(15, round(60 * 0.92^(round-1)))`. Difficulty: broad traits → materials/categories → specific objects → combinations. Game over shows score, best score, what the AI saw. Hunt photos do NOT go on the board.
 6. Bulletin Board (Milanote-style): pinch zoom, pan, tap to lift + toolbar (Rename, View facts, Unpin), double-tap note to open facts, long-press drag to move, drag-to-trash zone, Undo toast, fit-all button, double-tap cork to toggle zoom. Positions saved on device.

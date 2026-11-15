@@ -2,13 +2,14 @@ import type { MetadataRoute } from "next";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Object Biographies",
-    short_name: "Biographies",
-    description: "Every ordinary object has an extraordinary story.",
+    name: "Know it",
+    short_name: "Know it",
+    description: "Learn something real instead of scrolling.",
     start_url: "/",
     display: "standalone",
-    background_color: "#0b1020",
-    theme_color: "#0b1020",
+    orientation: "portrait",
+    background_color: "#38bdf8",
+    theme_color: "#38bdf8",
     icons: [
       { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
       { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png", purpose: "any" },
