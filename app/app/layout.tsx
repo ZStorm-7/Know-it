@@ -23,7 +23,7 @@ const caveat = localFont({
 
 export const metadata: Metadata = {
   title: "Know it",
-  description: "Learn something real instead of scrolling. Snap any object and discover its story.",
+  description: "Learn something extraordinary about the ordinary. Swap scrolling for snapping: point your camera at any object and discover its story.",
   appleWebApp: { capable: true, title: "Know it", statusBarStyle: "black-translucent" },
   icons: { apple: "/icons/apple-touch-icon.png" },
 };

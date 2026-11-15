@@ -64,6 +64,7 @@ export function CloudLoader({ size = 140 }: { size?: number }) {
       </defs>
       <g clipPath={`url(#cl${id})`}>
         <g className="cl-level">
+          <g className="cl-bob">
           <path
             className="cl-wave cl-wave-back"
             d="M-120 40 Q-105 32 -90 40 T-60 40 T-30 40 T0 40 T30 40 T60 40 T90 40 T120 40 T150 40 T180 40 T210 40 T240 40 V120 H-120 Z"
@@ -74,6 +75,7 @@ export function CloudLoader({ size = 140 }: { size?: number }) {
             d="M-120 42 Q-105 50 -90 42 T-60 42 T-30 42 T0 42 T30 42 T60 42 T90 42 T120 42 T150 42 T180 42 T210 42 T240 42 V120 H-120 Z"
             fill="#ffffff"
           />
+          </g>
         </g>
       </g>
       <path d={CLOUD_PATH} fill="none" stroke="#fff" strokeWidth="3.5" strokeLinejoin="round" />

@@ -1,6 +1,6 @@
 # Know it: agreed spec
 
-Theme: Elevate the Ordinary. Mobile-only installable PWA (Next.js). Motto: "Learn something real instead of scrolling."
+Theme: Elevate the Ordinary. Mobile-only installable PWA (Next.js). Motto: "Learn something extraordinary about the ordinary." Scrolling line: "Swap your next scroll for a snap."
 
 ## AI
 - Gemini via the OpenAI-compatible endpoint `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions` (Bearer auth).
@@ -31,8 +31,8 @@ Theme: Elevate the Ordinary. Mobile-only installable PWA (Next.js). Motto: "Lear
 7. Settings: theme, music volume, SFX toggle, vibration, reduce motion, text size, fact style (kid/normal/nerdy), Hunt starting difficulty, replay tutorial, reset progress, credits. No mute button elsewhere.
 
 ## Music (Storyblocks, loop per place, crossfade)
-- Home: Upbeat Cheerful Optimistic Jazz
+- Home: Via Portugal
 - Facts: Joyful Ride
 - Hunt: Comedy Background Detective Cartoon
-- Bulletin Board: Jolly Stomping Rhythm
+- Bulletin Board: Fresh Story
 (Check the Storyblocks license allows embedding in a public app.)

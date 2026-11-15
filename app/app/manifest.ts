@@ -4,7 +4,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Know it",
     short_name: "Know it",
-    description: "Learn something real instead of scrolling.",
+    description: "Learn something extraordinary about the ordinary. A better use of the minutes you would spend scrolling.",
     start_url: "/",
     display: "standalone",
     orientation: "portrait",

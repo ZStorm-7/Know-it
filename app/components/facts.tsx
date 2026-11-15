@@ -166,7 +166,7 @@ export function Facts() {
 
 // ---------- Tutorial ----------
 const STEPS = [
-  { mood: "happy" as const, text: "Hi, I'm Nimbus! In Facts, you snap any everyday object and I'll tell you its secrets." },
+  { mood: "happy" as const, text: "Hi, I'm Nimbus! Instead of scrolling, snap any everyday object and I'll tell you its secrets." },
   { mood: "wow" as const, text: "Point your camera at ONE object, then tap the big white button." },
   { mood: "think" as const, text: "If I see a few things, I'll outline them. Just tap the one you mean!" },
   { mood: "happy" as const, text: "Every object you learn about becomes a sticky note on your Bulletin Board. Ready?" },

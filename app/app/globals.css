@@ -143,15 +143,20 @@ textarea {
 /* ---------- Cloud loader ---------- */
 .cloud-loader .cl-wave { animation: wave 1.6s linear infinite; }
 .cloud-loader .cl-wave-back { animation: wave 2.4s linear infinite reverse; }
-.cloud-loader .cl-level { animation: fill-level 3.2s ease-in-out infinite; }
+/* rise once to just below the top of the cloud, then hold with the waves rolling */
+.cloud-loader .cl-level { animation: fill-up 2.6s cubic-bezier(.35,.1,.25,1) forwards; }
+.cloud-loader .cl-bob { animation: level-bob 2.2s ease-in-out 2.6s infinite; }
 @keyframes wave {
   from { transform: translateX(0); }
   to { transform: translateX(60px); }
 }
-@keyframes fill-level {
-  0% { transform: translateY(42px); }
-  50% { transform: translateY(-22px); }
-  100% { transform: translateY(42px); }
+@keyframes fill-up {
+  from { transform: translateY(42px); }
+  to { transform: translateY(-15px); }
+}
+@keyframes level-bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(2.5px); }
 }
 
 /* ---------- Nimbus ---------- */

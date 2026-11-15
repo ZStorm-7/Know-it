@@ -35,6 +35,13 @@ function explain(status: number, body: string): { status: number; user: string }
   return { status: 502, user: "The AI service had a hiccup. Please try again." };
 }
 
+/** Reads GEMINI_API_KEY, tolerating a BOM (Notepad), quotes or stray spaces in .env.local. */
+function readKey(): string | undefined {
+  const name = Object.keys(process.env).find((k) => k.replace(/^\uFEFF/, "").trim() === "GEMINI_API_KEY");
+  const raw = name ? process.env[name] : undefined;
+  return raw?.trim().replace(/^["']|["']$/g, "").trim() || undefined;
+}
+
 export async function geminiJSON<T>(opts: {
   model: string;
   system: string;
@@ -43,7 +50,7 @@ export async function geminiJSON<T>(opts: {
   temperature?: number;
   signal?: AbortSignal;
 }): Promise<T> {
-  const key = process.env.GEMINI_API_KEY?.trim();
+  const key = readKey();
   if (!key || key === "your-gemini-key-here")
     throw new GeminiError("Server is missing GEMINI_API_KEY", 500, "No Gemini API key found. Put GEMINI_API_KEY=your-key in app/.env.local, then restart the server.");
 

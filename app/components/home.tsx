@@ -90,7 +90,8 @@ export function Home() {
       {/* logo + motto */}
       <div data-in className="flex flex-col items-center" style={{ marginTop: "clamp(8px, 3dvh, 32px)" }}>
         <Logo />
-        <p className="mt-3 text-center text-[clamp(0.95rem,4vw,1.15rem)] font-bold opacity-95">Learn something real instead of scrolling.</p>
+        <p className="mt-3 text-center text-[clamp(0.95rem,4vw,1.15rem)] font-bold opacity-95">Learn something extraordinary about the ordinary.</p>
+        <p className="glass mt-2 rounded-full px-3 py-1 text-center text-[clamp(0.72rem,3.2vw,0.85rem)] font-bold">Swap your next scroll for a snap.</p>
       </div>
 
       {/* Nimbus + compliment: the speech bubble comes out of Nimbus */}
