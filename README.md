@@ -15,4 +15,10 @@ Theme: **Elevate the Ordinary**
 _TBD_
 
 ## Setup
-_TBD_
+```bash
+cd app
+cp .env.example .env.local   # add your ANTHROPIC_API_KEY
+npm install
+npm run dev                  # http://localhost:3000
+```
+Claude API route: `POST /api/claude` with `{prompt, system?}` -> `{text}`.
