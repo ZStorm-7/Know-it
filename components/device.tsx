@@ -91,7 +91,7 @@ export function DeviceScreen() {
       data-in
       onClick={() => choose(d)}
       className="card relative flex w-full flex-col items-center gap-2 px-4 py-4 text-center transition active:scale-[0.97]"
-      style={{ minHeight: "clamp(190px, 31dvh, 270px)" }}
+      style={{ minHeight: "clamp(150px, 29dvh, 270px)" }}
     >
       {guess === d && (
         <span className="absolute -top-3 right-3 rounded-full border-2 border-[var(--ink)] bg-[var(--sun)] px-2.5 py-0.5 text-xs font-extrabold text-[var(--ink)]">

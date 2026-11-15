@@ -2,6 +2,7 @@
 import gsap from "gsap";
 import { ReactNode, useEffect, useRef, useState } from "react";
 import { haptic, sfx } from "@/lib/client/audio";
+import { useStore } from "@/lib/client/store";
 
 // ---------- Squishy button ----------
 export function Btn({
@@ -14,7 +15,7 @@ export function Btn({
 }: {
   children: ReactNode;
   onClick?: () => void;
-  variant?: "" | "sun" | "mint" | "violet" | "white";
+  variant?: "" | "sun" | "mint" | "violet" | "white" | "green" | "red" | "brown";
   className?: string;
   style?: React.CSSProperties;
   disabled?: boolean;
@@ -78,7 +79,7 @@ export function Sheet({ open, onClose, children, tall }: { open: boolean; onClos
       <div ref={backdrop} className="absolute inset-0 bg-slate-900/50" onClick={onClose} />
       <div
         ref={panel}
-        className="card absolute bottom-0 left-0 right-0 flex flex-col rounded-b-none border-b-0"
+        className="card absolute bottom-0 left-0 right-0 mx-auto flex w-full max-w-[640px] flex-col rounded-b-none border-b-0"
         style={{ maxHeight: tall ? "92dvh" : "85dvh", paddingBottom: "env(safe-area-inset-bottom)" }}
       >
         <div className="mx-auto mt-2 h-1.5 w-12 shrink-0 rounded-full bg-slate-300" />
@@ -108,12 +109,23 @@ export function Toaster() {
       pushToast = null;
     };
   }, []);
+  const phone = useStore((s) => s.settings.device) !== "desktop";
+  // On a phone the bottom of the screen is full of buttons, so plain messages appear at the top.
+  // Messages with an action (like Undo) stay at the bottom where a thumb can reach them.
+  const top = phone ? items.filter((t) => !t.action) : [];
+  const bottom = phone ? items.filter((t) => t.action) : items;
+  const view = (list: ToastItem[]) => list.map((t) => <ToastView key={t.id} item={t} onDone={() => setItems((s) => s.filter((x) => x.id !== t.id))} />);
   return (
-    <div className="pointer-events-none fixed inset-x-0 z-[90] flex flex-col items-center gap-2 px-4" style={{ bottom: "calc(env(safe-area-inset-bottom) + 24px)" }}>
-      {items.map((t) => (
-        <ToastView key={t.id} item={t} onDone={() => setItems((s) => s.filter((x) => x.id !== t.id))} />
-      ))}
-    </div>
+    <>
+      {top.length > 0 && (
+        <div className="pointer-events-none fixed inset-x-0 z-[90] flex flex-col items-center gap-2 px-4" style={{ top: "calc(env(safe-area-inset-top) + 10px)" }}>
+          {view(top)}
+        </div>
+      )}
+      <div className="pointer-events-none fixed inset-x-0 z-[90] flex flex-col items-center gap-2 px-4" style={{ bottom: "calc(env(safe-area-inset-bottom) + 24px)" }}>
+        {view(bottom)}
+      </div>
+    </>
   );
 }
 
@@ -144,7 +156,7 @@ function ToastView({ item, onDone }: { item: ToastItem; onDone: () => void }) {
 const CONFETTI_COLORS = ["#ff6fae", "#ffd23f", "#34d399", "#38bdf8", "#8b5cf6", "#fff"];
 export function confetti(originY = 0.4, count = 60) {
   const layer = document.createElement("div");
-  layer.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:95;overflow:hidden";
+  layer.style.cssText = "position:fixed;inset:0;pointer-events:none;z-index:130;overflow:hidden";
   document.body.appendChild(layer);
   const w = window.innerWidth;
   const h = window.innerHeight;

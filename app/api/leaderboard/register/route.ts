@@ -1,6 +1,7 @@
 import { NextRequest } from "next/server";
 import { GeminiError, geminiJSON, MODEL_FAST } from "@/lib/server/gemini";
-import { claimName, getUser, nameKey, storageMode } from "@/lib/server/board-store";
+import { addSession, hashPassword, passwordProblem } from "@/lib/server/auth";
+import { claimName, getUser, nameKey, storageMode, type UserRecord } from "@/lib/server/board-store";
 import { handle } from "@/lib/server/route-utils";
 
 const SYSTEM = `You are the username moderator for a friendly learning game used by children and adults.
@@ -22,11 +23,14 @@ Return JSON only: {"appropriate": boolean, "reason": string}
 export async function POST(req: NextRequest) {
   return handle(req, async (body) => {
     const name = String(body.name ?? "").trim();
+    const password = String(body.password ?? "");
     if (!/^[A-Za-z0-9_.-]{3,16}$/.test(name)) {
       throw new GeminiError("bad name", 400, "Use 3 to 16 letters, numbers, dots, dashes or underscores. No spaces.");
     }
     const key = nameKey(name);
     if (key.length < 3) throw new GeminiError("bad name", 400, "Add a few more letters or numbers.");
+    const problem = passwordProblem(password, name);
+    if (problem) throw new GeminiError("bad password", 400, problem);
 
     // 1. cheap check first: is it already taken?
     if (await getUser(key)) throw new GeminiError("taken", 409, "That username is taken. Try another one.");
@@ -40,18 +44,13 @@ export async function POST(req: NextRequest) {
       signal: req.signal,
     });
     if (verdict.appropriate !== true) {
-      throw new GeminiError(
-        "rejected",
-        422,
-        String(verdict.reason || "Let's pick a friendlier name that everyone would be happy to see.").slice(0, 160),
-      );
+      throw new GeminiError("rejected", 422, String(verdict.reason || "Let's pick a friendlier name that everyone would be happy to see.").slice(0, 160));
     }
 
     // 3. claim it (atomic, so two people can't both get the same name)
-    const token = crypto.randomUUID();
-    if (!(await claimName(key, { name, token, at: Date.now() }))) {
-      throw new GeminiError("taken", 409, "That username is taken. Try another one.");
-    }
-    return { name, token, mode: storageMode };
+    const rec: UserRecord = { name, at: Date.now(), ...(await hashPassword(password)) };
+    const token = addSession(rec);
+    if (!(await claimName(key, rec))) throw new GeminiError("taken", 409, "That username is taken. Try another one.");
+    return { name, token, hasPassword: true, mode: storageMode };
   });
 }

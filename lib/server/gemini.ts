@@ -42,7 +42,24 @@ function readKey(): string | undefined {
   return raw?.trim().replace(/^["']|["']$/g, "").trim() || undefined;
 }
 
+/** Calls Gemini and returns parsed JSON. An unreadable answer is retried once before giving up. */
 export async function geminiJSON<T>(opts: {
+  model: string;
+  system: string;
+  user: string;
+  imageDataUrl?: string;
+  temperature?: number;
+  signal?: AbortSignal;
+}): Promise<T> {
+  try {
+    return await geminiOnce<T>(opts);
+  } catch (e) {
+    if (e instanceof GeminiError && /unreadable/i.test(e.message)) return geminiOnce<T>(opts);
+    throw e;
+  }
+}
+
+async function geminiOnce<T>(opts: {
   model: string;
   system: string;
   user: string;

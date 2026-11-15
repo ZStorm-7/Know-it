@@ -120,7 +120,7 @@ export function WelcomeBack() {
           {last && (
             <Btn
               variant="white"
-              className="h-14"
+              className="h-[50px]"
               onClick={() => {
                 setPendingNote(last.id);
                 setOpen(false);
@@ -130,7 +130,7 @@ export function WelcomeBack() {
               Open last note
             </Btn>
           )}
-          <Btn variant="mint" className="h-14" onClick={close}>
+          <Btn variant="mint" className="h-[50px]" onClick={close}>
             Let&apos;s go
           </Btn>
         </div>

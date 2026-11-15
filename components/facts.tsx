@@ -7,7 +7,7 @@ import { haptic, sfx } from "@/lib/client/audio";
 import { shrinkDataUrl } from "@/lib/client/image";
 import { setPendingNote } from "@/lib/client/nav";
 import { ANALYZE_LINES, shuffle, shuffleQuiz } from "@/lib/client/random";
-import { addNote, addXp, Box, getState, objectKey, recordActivity, rememberFacts, update, useStore } from "@/lib/client/store";
+import { addNote, addXp, Box, getState, objectKey, patchNote, recordActivity, rememberFacts, saveNoteDetail, update, useStore } from "@/lib/client/store";
 import { useNav } from "./app";
 import { categoryColor, clampTitle, CloudLoader, Nimbus, NOTE_COLORS, noteFontSize, Pushpin } from "./art";
 import { Camera } from "./camera";
@@ -24,7 +24,11 @@ type Result = {
   confidence: number;
   metBefore: boolean;
   category: string;
+  /** Set when this result corrects an existing note, so the note is updated instead of a new one added. */
+  noteId?: string;
 };
+
+type Target = { name: string; box: Box | null; confidence: number };
 
 type Phase =
   | { k: "camera" }
@@ -42,9 +46,9 @@ function area(b: Box) {
 export function autoPick(objects: Detected[]): Detected | null {
   if (objects.length === 0) return null;
   const [a, b] = objects;
-  if (!b) return a.confidence >= 45 ? a : null;
-  if (a.confidence >= 70 && area(a.box) >= 2 * area(b.box)) return a;
-  return null;
+  if (!b) return a.confidence >= 60 ? a : null;
+  if (a.confidence >= 80 && area(a.box) >= 3 * area(b.box)) return a;
+  return null; // not sure which one you mean (or what it is): ask
 }
 
 export function Facts() {
@@ -52,6 +56,7 @@ export function Facts() {
   const tutorialDone = useStore((s) => s.tutorialDone);
   const [phase, setPhase] = useState<Phase>({ k: "camera" });
   const abort = useRef<AbortController | null>(null);
+  const savedNote = useRef<string | undefined>(undefined);
 
   useEffect(() => () => abort.current?.abort(), []);
 
@@ -67,15 +72,12 @@ export function Facts() {
     abort.current = ctrl;
     setPhase({ k: "loading", photo });
     try {
-      const det = await api.detect(photo, ctrl.signal);
+      let det = await api.detect(photo, ctrl.signal);
+      if (det.objects.length === 0) det = await api.detect(photo, ctrl.signal); // the AI sometimes misses: look once more
       if (det.objects.length === 0) {
-        sfx("buzz");
-        setPhase({
-          k: "error",
-          msg: det.hasPerson
-            ? "I only learn about objects, not people. Point me at a thing instead!"
-            : "Hmm, I couldn't spot an object. Try getting closer with better light.",
-        });
+        // nothing found: let the player tell Nimbus what it is
+        sfx("boing");
+        setPhase({ k: "choose", photo, objects: [] });
         return;
       }
       const pick = autoPick(det.objects);
@@ -89,7 +91,7 @@ export function Facts() {
     }
   };
 
-  const learn = async (photo: string, obj: Detected, ctrl?: AbortController) => {
+  const learn = async (photo: string, obj: Target, ctrl?: AbortController, typed = false, noteId?: string) => {
     if (!ctrl) {
       abort.current?.abort();
       ctrl = new AbortController();
@@ -99,7 +101,7 @@ export function Facts() {
     const key = objectKey(obj.name);
     const seen = getState().seenFacts[key] ?? [];
     try {
-      const res = await api.facts({ image: photo, target: obj.name, avoid: seen, style: getState().settings.factStyle }, ctrl.signal);
+      const res = await api.facts({ image: photo, target: obj.name, avoid: seen, style: getState().settings.factStyle, typed }, ctrl.signal);
       if (!res.facts.length) throw new ApiError("Nimbus drew a blank. Try another photo!");
       rememberFacts(key, res.facts);
       setPhase({
@@ -114,6 +116,7 @@ export function Facts() {
           confidence: Math.round((res.confidence + obj.confidence) / 2),
           metBefore: seen.length > 0,
           category: res.category,
+          noteId,
         },
       });
     } catch (e) {
@@ -128,13 +131,19 @@ export function Facts() {
   };
 
   return (
-    <div className="absolute inset-0">
+    <div className="bleed absolute inset-0">
       {(phase.k === "camera" || phase.k === "loading") && (
         <Camera onBack={() => go("home")} onCapture={analyze} disabled={phase.k !== "camera"} />
       )}
       {phase.k === "loading" && <Loading photo={phase.photo} onCancel={cancel} />}
       {phase.k === "choose" && (
-        <Choose photo={phase.photo} objects={phase.objects} onPick={(o) => learn(phase.photo, o)} onRetake={() => setPhase({ k: "camera" })} />
+        <Choose
+          photo={phase.photo}
+          objects={phase.objects}
+          onPick={(o) => learn(phase.photo, o)}
+          onTyped={(name) => learn(phase.photo, { name, box: null, confidence: 85 }, undefined, true)}
+          onRetake={() => setPhase({ k: "camera" })}
+        />
       )}
       {phase.k === "result" && (
         <ResultView
@@ -142,6 +151,10 @@ export function Facts() {
           r={phase.r}
           onAgain={() => setPhase({ k: "camera" })}
           onHome={() => go("home")}
+          onSaved={(id) => {
+            savedNote.current = id;
+          }}
+          onCorrect={(typed) => learn(phase.r.photo, { name: typed, box: null, confidence: 85 }, undefined, true, savedNote.current)}
           onBoard={(id) => {
             if (id) setPendingNote(id);
             go("board");
@@ -154,10 +167,10 @@ export function Facts() {
             <Nimbus size={150} mood="sad" className="bob mx-auto" />
             <p className="mt-3 text-lg font-bold">{phase.msg}</p>
             <div className="mt-5 flex flex-col gap-3">
-              <Btn variant="mint" className="h-16 text-xl" onClick={() => setPhase({ k: "camera" })}>
+              <Btn variant="mint" className="h-[58px] text-lg" onClick={() => setPhase({ k: "camera" })}>
                 Try again
               </Btn>
-              <Btn variant="white" className="h-14" onClick={() => go("home")}>
+              <Btn variant="white" className="h-[50px]" onClick={() => go("home")}>
                 Main Menu
               </Btn>
             </div>
@@ -220,10 +233,10 @@ function Tutorial({ onDone }: { onDone: () => void }) {
             ))}
           </p>
           <div className="mt-4 flex gap-3">
-            <Btn variant="white" className="h-14" onClick={onDone}>
+            <Btn variant="white" className="h-[50px]" onClick={onDone}>
               Skip
             </Btn>
-            <Btn variant="mint" className="h-14 text-xl" onClick={next}>
+            <Btn variant="mint" className="h-[50px] text-lg" onClick={next}>
               {i < STEPS.length - 1 ? "Next" : "Let's go!"}
             </Btn>
           </div>
@@ -283,10 +296,12 @@ export function Choose({
   retakeLabel = "Retake photo",
   autoLabel,
   onAuto,
+  onTyped,
 }: {
   photo: string;
   objects: Detected[];
   onPick: (o: Detected) => void;
+  onTyped?: (name: string) => void;
   onRetake: () => void;
   prompt?: string;
   retakeLabel?: string;
@@ -295,36 +310,69 @@ export function Choose({
 }) {
   const colors = ["#ffd23f", "#ff6fae", "#34d399"];
   const root = useRef<HTMLDivElement>(null);
+  const [typing, setTyping] = useState(objects.length === 0);
+  const [typed, setTyped] = useState("");
   useEffect(() => {
     gsap.fromTo(root.current!.querySelectorAll("[data-in]"), { y: 30, opacity: 0 }, { y: 0, opacity: 1, stagger: 0.08, duration: 0.5, ease: "back.out(1.7)" });
   }, []);
   return (
     <div ref={root} className="absolute inset-0 z-30 flex flex-col items-center gap-4 overflow-y-auto px-5 pt-6" style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}>
       <div data-in className="flex w-full max-w-md items-center gap-3">
-        <Nimbus size={110} mood="think" className="bob shrink-0" />
-        <div className="bubble bubble-left flex-1 px-4 py-3 text-[1rem] font-bold">{prompt}</div>
+        <div className="choose-nimbus shrink-0">
+          <Nimbus size={110} mood="think" className="bob" />
+        </div>
+        <div className="bubble bubble-left flex-1 px-4 py-3 text-[1rem] font-bold">{objects.length === 0 ? "I couldn't spot it. Tell me what it is and I'll teach you about it!" : prompt}</div>
       </div>
       <div data-in className="w-full max-w-md">
         <PhotoBox
           src={photo}
-          maxHeight="46dvh"
+          maxHeight="clamp(170px, 34dvh, 400px)"
           outlines={objects.map((o, i) => ({ box: o.box, label: o.name, color: colors[i % 3], selectable: true }))}
           onSelect={(i) => onPick(objects[i])}
         />
       </div>
       <div data-in className="flex w-full max-w-md flex-col gap-2.5">
         {objects.map((o, i) => (
-          <Btn key={i} variant="white" className="h-15 py-3 text-xl capitalize" onClick={() => onPick(o)}>
+          <Btn key={i} variant="white" className="h-[54px] py-3 text-lg capitalize" onClick={() => onPick(o)}>
             <span className="h-4 w-4 rounded-full border-2 border-[var(--ink)]" style={{ background: colors[i % 3] }} />
             {o.name}
           </Btn>
         ))}
+        {onTyped && (
+          <div>
+            {!typing ? (
+              <button className="min-h-[46px] w-full rounded-2xl border-[2.5px] border-[var(--ink)] bg-white/85 px-3 text-center text-[0.95rem] font-extrabold text-[var(--ink)] active:scale-[0.98]" onClick={() => setTyping(true)}>
+                None of these? Tell Nimbus what it is
+              </button>
+            ) : (
+              <form
+                className="flex gap-2"
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  if (typed.trim()) onTyped(typed.trim().slice(0, 60));
+                }}
+              >
+                <input
+                  autoFocus
+                  value={typed}
+                  maxLength={60}
+                  placeholder="What is it?"
+                  onChange={(e) => setTyped(e.target.value)}
+                  className="min-w-0 flex-1 rounded-xl border-[2.5px] border-[var(--ink)] bg-white px-3 py-2.5 text-lg font-bold text-[var(--ink)] outline-none"
+                />
+                <button type="submit" disabled={!typed.trim()} className="rounded-xl border-[2.5px] border-[var(--ink)] bg-[var(--sun)] px-4 font-extrabold text-[var(--ink)] disabled:opacity-50 active:scale-95">
+                  Go
+                </button>
+              </form>
+            )}
+          </div>
+        )}
         {onAuto && autoLabel && (
-          <Btn variant="sun" className="h-14" onClick={onAuto}>
+          <Btn variant="sun" className="h-[50px]" onClick={onAuto}>
             {autoLabel}
           </Btn>
         )}
-        <button className="mt-1 text-sm font-bold underline opacity-90" onClick={onRetake}>
+        <button className="mx-auto mt-1 min-h-[44px] rounded-full bg-white/85 px-5 text-sm font-extrabold text-[var(--ink)] active:scale-95" onClick={onRetake}>
           {retakeLabel}
         </button>
       </div>
@@ -343,7 +391,7 @@ function revealTimes(n: number, total: number) {
   });
 }
 
-function ResultView({ r, onAgain, onHome, onBoard }: { r: Result; onAgain: () => void; onHome: () => void; onBoard: (noteId: string | null) => void }) {
+function ResultView({ r, onAgain, onHome, onBoard, onCorrect, onSaved }: { r: Result; onAgain: () => void; onHome: () => void; onBoard: (noteId: string | null) => void; onCorrect: (typed: string) => void; onSaved: (id: string) => void }) {
   const root = useRef<HTMLDivElement>(null);
   const boardChip = useRef<HTMLButtonElement>(null);
   const [savedId, setSavedId] = useState<string | null>(null);
@@ -372,11 +420,13 @@ function ResultView({ r, onAgain, onHome, onBoard }: { r: Result; onAgain: () =>
       }, [], times[i]);
     });
     tl.call(() => {
-      const gain = r.facts.length * 5;
+      const gain = r.noteId ? 0 : r.facts.length * 5; // fixing a wrong guess earns no extra points
       setXpGain(gain);
-      addXp(gain);
-      const streak = recordActivity();
-      if (streak && streak > 1) setTimeout(() => toast(`${streak}-day streak! Keep it going.`), 1800);
+      if (gain) {
+        addXp(gain);
+        const streak = recordActivity();
+        if (streak && streak > 1) setTimeout(() => toast(`${streak}-day streak! Keep it going.`), 1800);
+      }
       sfx("chime");
       setStage("pin");
     }, [], "+=0.5");
@@ -390,13 +440,27 @@ function ResultView({ r, onAgain, onHome, onBoard }: { r: Result; onAgain: () =>
     if (stage !== "pin") return;
     (async () => {
       try {
+        if (r.noteId) {
+          // a correction: update the note that is already on the board
+          const small = await shrinkDataUrl(r.photo, 640);
+          await saveNoteDetail(r.noteId, { photo: small, box: r.box, facts: r.facts, confidence: r.confidence, object: r.object });
+          patchNote(r.noteId, { title: r.title, suggested: r.title, object: r.object, category: r.category });
+          setSavedId(r.noteId);
+          onSaved(r.noteId);
+          toast("Updated your note on the Bulletin Board");
+          setStage("done");
+          return;
+        }
         const small = await shrinkDataUrl(r.photo, 640);
         const n = await addNote(r.title, { photo: small, box: r.box, facts: r.facts, confidence: r.confidence, object: r.object }, noteColor, r.category);
         setSavedId(n.id);
+        onSaved(n.id);
       } catch {
         toast("Couldn't save to your board (storage full?)");
       }
     })();
+    // onSaved is a new function each render; adding it here would save the note twice
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [stage, r, noteColor]);
 
   return (
@@ -452,6 +516,8 @@ function ResultView({ r, onAgain, onHome, onBoard }: { r: Result; onAgain: () =>
 
         {stage === "done" && r.quiz && <Quiz quiz={r.quiz} pick={quizPick} onPick={setQuizPick} />}
 
+        {stage === "done" && <WrongObject current={r.object} onCorrect={onCorrect} />}
+
         <div className="mx-auto mt-6 max-w-md text-center text-[0.72rem] leading-snug opacity-80">
           AI confidence: about {r.confidence}%
           <br />
@@ -460,16 +526,53 @@ function ResultView({ r, onAgain, onHome, onBoard }: { r: Result; onAgain: () =>
       </div>
 
       {/* footer */}
-      <div className="flex gap-3 border-t-2 border-white/30 px-5 pt-3" style={{ paddingBottom: "max(14px, env(safe-area-inset-bottom))" }}>
-        <Btn variant="white" className="h-16 text-[1.15rem]" onClick={onHome}>
+      <div className="border-t-2 border-white/30 px-5 pt-3" style={{ paddingBottom: "max(14px, env(safe-area-inset-bottom))" }}>
+        <div className="mx-auto flex w-full max-w-md gap-3">
+        <Btn variant="white" className="h-[58px] text-[1.05rem]" onClick={onHome}>
           <HomeIcon size={20} strokeWidth={2.8} /> Main Menu
         </Btn>
-        <Btn variant="sun" className="h-16 text-[1.15rem]" onClick={onAgain}>
+        <Btn variant="sun" className="h-[58px] text-[1.05rem]" onClick={onAgain}>
           <CameraIcon size={20} strokeWidth={2.8} /> Snap Again
         </Btn>
+        </div>
       </div>
 
-      {stage === "pin" && <PinFly title={r.title} color={noteColor} target={boardChip} onDone={() => setStage("done")} />}
+      {stage === "pin" && !r.noteId && <PinFly title={r.title} color={noteColor} target={boardChip} onDone={() => setStage("done")} />}
+    </div>
+  );
+}
+
+/** Small "that's not it" button under the quiz: type what the object really is and get new facts. */
+function WrongObject({ current, onCorrect }: { current: string; onCorrect: (typed: string) => void }) {
+  const [open, setOpen] = useState(false);
+  const [typed, setTyped] = useState("");
+  return (
+    <div className="mx-auto mt-4 max-w-md text-center">
+      {!open ? (
+        <button className="min-h-[46px] rounded-full bg-white/85 px-5 text-sm font-extrabold text-[var(--ink)] active:scale-95" onClick={() => setOpen(true)}>
+          Not a {current}? Tell Nimbus what it really is
+        </button>
+      ) : (
+        <form
+          className="card flex gap-2 p-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            if (typed.trim()) onCorrect(typed.trim().slice(0, 60));
+          }}
+        >
+          <input
+            autoFocus
+            value={typed}
+            maxLength={60}
+            placeholder="It's actually a..."
+            onChange={(e) => setTyped(e.target.value)}
+            className="min-w-0 flex-1 rounded-xl border-[2.5px] border-[var(--ink)] bg-white px-3 py-2.5 text-lg font-bold text-[var(--ink)] outline-none"
+          />
+          <button type="submit" disabled={!typed.trim()} className="rounded-xl border-[2.5px] border-[var(--ink)] bg-[var(--sun)] px-4 font-extrabold text-[var(--ink)] disabled:opacity-50 active:scale-95">
+            Fix it
+          </button>
+        </form>
+      )}
     </div>
   );
 }

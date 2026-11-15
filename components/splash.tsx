@@ -35,7 +35,7 @@ export function Splash({ onStart }: { onStart: () => void }) {
       <div className="min-h-[6rem]">{showLogo && <Logo />}</div>
       <div className="min-h-[3.5rem]">
         {ready && (
-          <span ref={tap} className="glass inline-block rounded-full px-7 py-3 text-lg font-extrabold">
+          <span ref={tap} className="tap-start glass inline-block rounded-full px-8 py-3.5 text-lg font-extrabold">
             Tap to start
           </span>
         )}

@@ -26,13 +26,124 @@ function ac() {
   return ctx;
 }
 
+// ---------- phone music ----------
+// On phones the music is a normal <audio> element, not decoded Web Audio buffers:
+//  - decoding all four tracks needs about 200 MB of memory, which phones can't spare, so playback failed;
+//  - an <audio> element keeps playing when an iPhone's silent switch is on;
+//  - one element that is unlocked by the first tap can then switch tracks freely.
+// Computers keep the crossfading Web Audio version below.
+const onPhone = () => getState().settings.device !== "desktop";
+export const isIOS = () =>
+  typeof navigator !== "undefined" && (/iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1));
+
+let el: HTMLAudioElement | null = null;
+let wanted: Track | null = null;
+let fadeRaf = 0;
+
+function musicEl() {
+  if (!el) {
+    el = new Audio();
+    el.loop = true;
+    el.preload = "auto";
+    el.setAttribute("playsinline", "");
+  }
+  return el;
+}
+
+function setElVolume(a: HTMLAudioElement, v: number) {
+  try {
+    a.volume = Math.max(0, Math.min(1, v)); // iPhones ignore this; people use the volume buttons there
+  } catch {}
+}
+
+function phoneVolume() {
+  return getState().settings.music;
+}
+
+function fadeTo(a: HTMLAudioElement, target: number, ms: number, done?: () => void) {
+  cancelAnimationFrame(fadeRaf);
+  const from = a.volume;
+  const t0 = performance.now();
+  const step = (t: number) => {
+    const k = Math.min(1, (t - t0) / ms);
+    setElVolume(a, from + (target - from) * k);
+    if (k < 1) fadeRaf = requestAnimationFrame(step);
+    else done?.();
+  };
+  fadeRaf = requestAnimationFrame(step);
+}
+
+function phonePlay(track: Track) {
+  const a = musicEl();
+  wanted = track;
+  const vol = phoneVolume();
+  if (vol <= 0) {
+    a.pause();
+    return;
+  }
+  const url = `/music/${track}.mp3`;
+  const start = () => {
+    if (!a.src.endsWith(url)) a.src = url;
+    a.loop = true;
+    setElVolume(a, 0);
+    a.play()
+      .then(() => fadeTo(a, vol, 700))
+      .catch(() => setElVolume(a, vol)); // blocked until the next tap; the tap handler below retries
+  };
+  if (a.src && !a.paused && !a.src.endsWith(url)) fadeTo(a, 0, 250, start);
+  else start();
+}
+
+let gestureHooked = false;
+function hookGestures() {
+  if (gestureHooked) return;
+  gestureHooked = true;
+  // after a call, a lock screen or a blocked start, the next tap brings sound back
+  const wake = () => {
+    if (ctx && ctx.state !== "running") ctx.resume().catch(() => {});
+    if (onPhone() && el && wanted && el.paused && phoneVolume() > 0) el.play().then(() => setElVolume(el!, phoneVolume())).catch(() => {});
+  };
+  document.addEventListener("pointerdown", wake, { passive: true });
+  document.addEventListener("touchend", wake, { passive: true });
+  document.addEventListener("visibilitychange", () => {
+    if (!onPhone() || !el) return;
+    if (document.hidden) el.pause();
+    else if (wanted && phoneVolume() > 0) el.play().catch(() => {});
+  });
+}
+
 /** Must be called from a user gesture (the splash "Tap to start"). */
 export function unlockAudio() {
+  hookGestures();
+  try {
+    // iOS 16.4+: let sound play even when the silent switch is on
+    const s = (navigator as unknown as { audioSession?: { type: string } }).audioSession;
+    if (s && onPhone()) s.type = "playback";
+  } catch {}
   const c = ac();
-  if (c.state === "suspended") c.resume();
+  if (c.state === "suspended") c.resume().catch(() => {});
+  if (onPhone()) {
+    // start the first track right inside the tap, so the phone lets us keep playing later
+    wanted = "home";
+    const a = musicEl();
+    a.src = "/music/home.mp3";
+    setElVolume(a, 0);
+    a.play()
+      .then(() => fadeTo(a, phoneVolume(), 900))
+      .catch(() => {});
+  }
 }
 
 export function setMusicVolume(v: number) {
+  if (onPhone()) {
+    if (!el) return;
+    if (v <= 0) el.pause();
+    else {
+      setElVolume(el, v);
+      if (el.paused && wanted) el.play().catch(() => {});
+    }
+    return;
+  }
   if (musicGain && ctx) musicGain.gain.setTargetAtTime(v, ctx.currentTime, 0.1);
 }
 
@@ -166,11 +277,17 @@ function loadTrack(t: Track) {
 }
 
 export function preloadMusic() {
+  if (onPhone()) return; // phones stream one track at a time
   (["home", "facts", "hunt", "board"] as Track[]).forEach((t) => loadTrack(t).catch(() => {}));
 }
 
 export async function playMusic(track: Track) {
   if (typeof window === "undefined") return;
+  if (onPhone()) {
+    if (wanted === track && el && !el.paused) return;
+    phonePlay(track);
+    return;
+  }
   if (current?.track === track) return;
   const c = ac();
   const myGen = ++gen;

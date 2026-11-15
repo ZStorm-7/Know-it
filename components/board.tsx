@@ -326,13 +326,13 @@ export function Board() {
   };
 
   return (
-    <div className="absolute inset-0 flex flex-col">
+    <div className="bleed absolute inset-0 flex flex-col">
       {/* toolbar */}
       <div className="relative z-20 flex items-center gap-3 px-4 pb-3 pt-4" style={{ background: "linear-gradient(180deg, rgba(15,23,42,0.35), transparent)" }}>
         <IconBtn label="Main menu" onClick={() => go("home")}>
           <HomeIcon size={22} strokeWidth={2.6} />
         </IconBtn>
-        <h2 className="font-display flex-1 text-center text-[1.7rem] leading-none" style={{ textShadow: "0 3px 0 #8b5cf6" }}>
+        <h2 className="font-display min-w-0 flex-1 text-center text-[clamp(1.15rem,6.2vw,1.7rem)] leading-none whitespace-nowrap" style={{ textShadow: "0 3px 0 #8b5cf6" }}>
           Bulletin Board
         </h2>
         <IconBtn label="Fit all notes" onClick={() => fit(true)}>
@@ -367,7 +367,7 @@ export function Board() {
           <div className="card pointer-events-auto max-w-xs p-5">
             <p className="text-lg font-bold">Your board is empty!</p>
             <p className="mt-1 text-[var(--ink-soft)]">Snap an object in Facts and its sticky note will land here.</p>
-            <Btn variant="sun" className="mt-4 h-14 text-xl" onClick={() => go("facts")}>
+            <Btn variant="sun" className="mt-4 h-[50px] text-lg" onClick={() => go("facts")}>
               Go to Facts
             </Btn>
           </div>
@@ -542,12 +542,12 @@ function NoteSheet({ id, onClose, onUnpin }: { id: string | null; onClose: () =>
           )}
 
           <div className="mt-4 flex gap-3">
-            <Btn variant="white" className="h-14" onClick={() => note && onUnpin(note.id)}>
+            <Btn variant="white" className="h-[50px]" onClick={() => note && onUnpin(note.id)}>
               <Trash2 size={18} strokeWidth={2.8} /> Unpin
             </Btn>
             <Btn
               variant="sun"
-              className="h-14"
+              className="h-[50px]"
               disabled={!detail}
               onClick={async () => {
                 if (!note || !detail) return;
@@ -561,7 +561,7 @@ function NoteSheet({ id, onClose, onUnpin }: { id: string | null; onClose: () =>
             >
               <Share2 size={18} strokeWidth={2.8} /> Share
             </Btn>
-            <Btn variant="mint" className="h-14" onClick={onClose}>
+            <Btn variant="mint" className="h-[50px]" onClick={onClose}>
               Done
             </Btn>
           </div>

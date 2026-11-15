@@ -2,7 +2,7 @@
 import type { Note, Settings } from "./store";
 
 export type SyncStreak = { count: number; best: number; last: string };
-export type SyncProfile = { name: string; token: string } | null;
+export type SyncProfile = { name: string; token: string; hasPassword?: boolean } | null;
 
 /** The small "main" document stored at users/{uid}. */
 export type SyncMain = {

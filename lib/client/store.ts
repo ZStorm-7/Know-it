@@ -54,8 +54,8 @@ export type State = {
   notes: Note[];
   seenFacts: Record<string, string[]>;
   streak: { count: number; best: number; last: string };
-  /** Leaderboard account. token proves the name is yours. */
-  profile: { name: string; token: string } | null;
+  /** Leaderboard account. token is this phone's sign-in session. hasPassword is false for accounts made before passwords. */
+  profile: { name: string; token: string; hasPassword?: boolean } | null;
   /** True if the player chose to skip the username step. */
   guest: boolean;
   /** When the app was last opened, and the leaderboard rank last time (for the welcome-back card). */
@@ -307,7 +307,7 @@ export async function importBackup(file: File): Promise<number> {
 }
 
 // ---------- Leaderboard account ----------
-export function setProfile(p: { name: string; token: string } | null) {
+export function setProfile(p: { name: string; token: string; hasPassword?: boolean } | null) {
   update((s) => ({ ...s, profile: p, guest: p ? false : s.guest }));
 }
 export function chooseGuest() {

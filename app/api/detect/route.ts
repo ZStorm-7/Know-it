@@ -10,7 +10,8 @@ Rules:
 - name is a short common noun phrase (e.g. "coffee mug", "running shoe").
 - confidence is 0-100: how sure you are about what the object is.
 - List at most 3 objects, most prominent first. Ignore background surfaces (walls, floors, tables) unless nothing else is there.
-- has_person is true if a person or a face is the main subject. Do not identify or describe people.`;
+- If the main subject is a person, or part of a person such as a hand or a face, list it too, named only "person", "hand", "face" or "people" for a group. Never identify who someone is.
+- has_person is true if a person is in the photo.`;
 
 export async function POST(req: NextRequest) {
   return handle(req, async (body) => {

@@ -55,13 +55,13 @@ export function Leaderboard({ limit = 10, refreshKey = 0 }: { limit?: number; re
   return (
     <div className="w-full max-w-sm">
       <ol className="card overflow-hidden">
-        {data.entries.slice(0, limit).map((e) => {
+        {data.entries.slice(0, limit).map((e, idx) => {
           const mine = !!me && e.name.toLowerCase() === me.toLowerCase();
           return (
             <li
               key={`${e.rank}-${e.name}`}
-              className={`flex items-center gap-3 border-b-2 border-slate-200 px-3 py-2 last:border-b-0 dark:border-white/10 ${mine ? "outline-3 -outline-offset-3 outline-[var(--violet)]" : ""}`}
-              style={e.rank <= 3 ? { background: ROW_TINT[e.rank], color: "#1e293b" } : undefined}
+              style={{ ...(e.rank <= 3 ? { background: ROW_TINT[e.rank], color: "#1e293b" } : {}), ["--i" as string]: idx } as React.CSSProperties}
+              className={`row-in flex items-center gap-3 border-b-2 border-slate-200 px-3 py-2 last:border-b-0 dark:border-white/10 ${mine ? "outline-3 -outline-offset-3 outline-[var(--violet)]" : ""}`}
             >
               <span className="grid w-10 shrink-0 place-items-center">
                 <RankBadge rank={e.rank} size={e.rank === 1 ? 42 : 38} />

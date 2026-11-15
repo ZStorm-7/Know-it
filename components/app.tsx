@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { playMusic, preloadMusic, setMusicVolume, sfx, Track, unlockAudio } from "@/lib/client/audio";
+import { playMusic, preloadMusic, setMusicVolume, Track, unlockAudio } from "@/lib/client/audio";
 import { initCloud } from "@/lib/client/cloud";
 import { setPrevVisit } from "@/lib/client/nav";
 import { getState, levelInfo, needsUsername, update, useStore } from "@/lib/client/store";
@@ -14,7 +14,8 @@ import { Sky } from "./sky";
 import { Splash } from "./splash";
 import { UsernameScreen } from "./username";
 import { CloudTransition, TransitionHandle } from "./transition";
-import { confetti, toast, Toaster } from "./ui";
+import { Toaster } from "./ui";
+import { LevelUpOverlay } from "./levelup";
 
 export type Screen = "splash" | "device" | "username" | "home" | "facts" | "hunt" | "board";
 
@@ -64,21 +65,31 @@ export default function App() {
 
   useEffect(() => setMusicVolume(settings.music), [settings.music]);
 
+  // phones: when the keyboard opens, scroll the field into view so it is never hidden behind it
+  useEffect(() => {
+    if (settings.device === "desktop") return;
+    const onFocus = (e: FocusEvent) => {
+      const t = e.target;
+      if (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement) {
+        setTimeout(() => t.scrollIntoView({ block: "center", behavior: "smooth" }), 320);
+      }
+    };
+    document.addEventListener("focusin", onFocus);
+    return () => document.removeEventListener("focusin", onFocus);
+  }, [settings.device]);
+
   // if this phone signed in to the cloud before, reconnect quietly at launch
   useEffect(() => {
     void initCloud();
   }, []);
 
-  // level-up celebration
+  // level-up celebration: a full-screen animation over whatever screen the player is on
   const lastLevel = useRef<number | null>(null);
+  const [levelUp, setLevelUp] = useState<{ level: number; name: string } | null>(null);
   useEffect(() => {
     const { level, name } = levelInfo(xp);
     if (lastLevel.current !== null && level > lastLevel.current) {
-      setTimeout(() => {
-        sfx("levelup");
-        confetti(0.3, 80);
-        toast(`Level up! You are now a ${name}`);
-      }, 900);
+      setLevelUp({ level, name });
     }
     lastLevel.current = level;
   }, [xp]);
@@ -132,6 +143,7 @@ export default function App() {
       )}
       <Toaster />
       <CloudTransition ref={tr} />
+      {levelUp && <LevelUpOverlay key={levelUp.level} level={levelUp.level} name={levelUp.name} onDone={() => setLevelUp(null)} />}
     </NavCtx.Provider>
   );
 }

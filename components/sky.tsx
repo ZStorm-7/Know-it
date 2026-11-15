@@ -53,7 +53,7 @@ export function Sky({ clouds = true }: { clouds?: boolean }) {
     <div className="sky" aria-hidden>
       <svg className="squiggles" viewBox="0 0 390 844" preserveAspectRatio="xMidYMid slice">
         {lines.map((l, i) => (
-          <g key={i} className="sq-bob" style={{ animationDuration: `${l.bob}s`, animationDelay: `${l.delay}s` }}>
+          <g key={i} className={`sq-bob ${i % 2 === 1 ? "sq-extra" : ""}`} style={{ animationDuration: `${l.bob}s`, animationDelay: `${l.delay}s` }}>
             <g className="sq-slide" style={{ animationDuration: `${l.slide}s`, animationDirection: l.reverse ? "reverse" : "normal", animationDelay: `${l.delay}s` }}>
               <path d={wave(l.y, l.amp)} fill="none" stroke="currentColor" strokeWidth={l.width} strokeLinecap="round" />
             </g>

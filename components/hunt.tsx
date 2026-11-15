@@ -296,7 +296,7 @@ export function Hunt() {
   const urgent = phase === "play" && left <= 5;
 
   return (
-    <div className="absolute inset-0">
+    <div className="bleed absolute inset-0">
       <Camera
         confirm={false}
         onBack={quit}
@@ -310,14 +310,14 @@ export function Hunt() {
         }
       />
       {/* lives + score */}
-      <div className="pointer-events-none absolute inset-x-0 z-10 flex items-center justify-between px-5" style={{ top: "calc(env(safe-area-inset-top) + 128px)" }}>
+      <div className="pointer-events-none absolute inset-x-0 z-10 mx-auto flex max-w-2xl items-center justify-between px-5" style={{ top: "calc(env(safe-area-inset-top) + 128px)" }}>
         <div className="glass flex gap-1.5 rounded-full px-3 py-1.5">
           {Array.from({ length: MAX_LIVES }, (_, i) => (
             <LifeCloud key={`${i}-${i < lives}`} filled={i < lives} size={30} />
           ))}
         </div>
         {phase === "play" && lives > 1 && (
-          <button onClick={skip} className="glass pointer-events-auto rounded-full px-3 py-1.5 text-[0.8rem] font-extrabold whitespace-nowrap active:scale-95">
+          <button onClick={skip} className="glass pointer-events-auto min-h-[44px] rounded-full px-3.5 py-2 text-[0.8rem] font-extrabold whitespace-nowrap active:scale-95">
             Skip (-1 cloud)
           </button>
         )}
@@ -453,7 +453,7 @@ function Intro({ best, onStart, onBack }: { best: number; onStart: () => void; o
         <IconBtn label="Back" onClick={onBack}>
           <HomeIcon size={22} strokeWidth={2.6} />
         </IconBtn>
-        <h2 className="font-display flex-1 pr-[52px] text-center text-[2.2rem] leading-none" style={{ textShadow: "0 3px 0 #ff6fae" }}>
+        <h2 className="font-display flex-1 pr-[48px] text-center text-[2.2rem] leading-none" style={{ textShadow: "0 3px 0 #ff6fae" }}>
           Hunt
         </h2>
       </div>
@@ -491,7 +491,7 @@ function Intro({ best, onStart, onBack }: { best: number; onStart: () => void; o
        </div>
       </div>
       <div data-in className="mx-auto w-full max-w-md">
-        <Btn className="text-2xl" style={{ height: "clamp(68px, 10dvh, 90px)" }} onClick={onStart}>
+        <Btn className="text-xl" style={{ height: "clamp(60px, 9.2dvh, 80px)" }} onClick={onStart}>
           Start hunting
         </Btn>
       </div>
@@ -520,9 +520,9 @@ function Over({ score, best, newBest, last, elevated, onAgain, onHome, onJoin }:
       })
       .catch((e) => {
         if (!alive) return;
-        if (e instanceof Error && /verify your username/i.test(e.message)) {
+        if (e instanceof Error && /sign in again/i.test(e.message)) {
           setProfile(null);
-          toast("Please choose your username again");
+          toast("Please sign in again to save your score");
         } else toast(e instanceof Error ? e.message : "Couldn't update the leaderboard");
       });
     return () => {
@@ -563,7 +563,7 @@ function Over({ score, best, newBest, last, elevated, onAgain, onHome, onJoin }:
           </p>
         ) : null}
         {!profile && (
-          <Btn variant="sun" className="h-14" onClick={onJoin}>
+          <Btn variant="sun" className="h-[50px]" onClick={onJoin}>
             Pick a username to join
           </Btn>
         )}
@@ -600,10 +600,10 @@ function Over({ score, best, newBest, last, elevated, onAgain, onHome, onJoin }:
       )}
       <div className="flex-1" />
       <div data-in className="flex w-full max-w-md gap-3">
-        <Btn variant="white" className="h-16 text-xl" onClick={onHome}>
+        <Btn variant="white" className="h-[58px] text-lg" onClick={onHome}>
           <HomeIcon size={20} strokeWidth={2.8} /> Main Menu
         </Btn>
-        <Btn className="h-16 text-xl" onClick={onAgain}>
+        <Btn className="h-[58px] text-lg" onClick={onAgain}>
           <RotateCcw size={20} strokeWidth={2.8} /> Play Again
         </Btn>
       </div>

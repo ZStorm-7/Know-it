@@ -6,7 +6,17 @@ const URL = process.env.UPSTASH_REDIS_REST_URL ?? process.env.KV_REST_API_URL;
 const TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN ?? process.env.KV_REST_API_TOKEN;
 export const storageMode: "redis" | "memory" = URL && TOKEN ? "redis" : "memory";
 
-export type UserRecord = { name: string; token: string; at: number };
+export type UserRecord = {
+  name: string;
+  at: number;
+  /** scrypt password hash and salt (hex) */
+  salt?: string;
+  hash?: string;
+  /** SHA-256 of each signed-in session token, newest last */
+  sessions?: string[];
+  /** Accounts made before passwords existed used one plain token. */
+  token?: string;
+};
 
 // ---------- memory fallback ----------
 const memUsers = new Map<string, UserRecord>();
@@ -109,4 +119,13 @@ export async function deleteUser(key: string): Promise<void> {
   }
   await redis(["HDEL", "users", key]);
   await redis(["ZREM", "scores", key]);
+}
+
+/** Saves changes to an existing account (new password, new session...). */
+export async function putUser(key: string, rec: UserRecord): Promise<void> {
+  if (storageMode === "memory") {
+    memUsers.set(key, rec);
+    return;
+  }
+  await redis(["HSET", "users", key, JSON.stringify(rec)]);
 }

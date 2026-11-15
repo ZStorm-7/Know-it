@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { Camera, Flame, Search, Settings, StickyNote } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { api } from "@/lib/client/api";
+import { sfx } from "@/lib/client/audio";
 import { levelInfo, liveStreak, useStore } from "@/lib/client/store";
 import { useNav } from "./app";
 import { BrainIcon, Nimbus } from "./art";
@@ -31,6 +32,13 @@ export function Home() {
   const streakData = useStore((s) => s.streak);
   const streak = liveStreak(streakData);
   const [collectionOpen, setCollectionOpen] = useState(false);
+  const [tip, setTip] = useState(false);
+  const tipTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  const todayKey = (() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  })();
+  const streakDoneToday = streakData.last === todayKey;
   const desktop = useStore((s) => s.settings.device) === "desktop";
   const [compliment, setCompliment] = useState<string | null>(cachedCompliment);
   const root = useRef<HTMLDivElement>(null);
@@ -84,13 +92,41 @@ export function Home() {
               <span className="shrink-0 opacity-80">Lv {lvl.level}</span>
             </div>
             <div className="mt-1 h-2.5 overflow-hidden rounded-full bg-white/30">
-              <div className="h-full rounded-full bg-[var(--sun)] transition-[width] duration-700" style={{ width: `${Math.max(6, lvl.progress * 100)}%` }} />
+              <div className="shimmer h-full rounded-full bg-[var(--sun)] transition-[width] duration-700" style={{ width: `${Math.max(6, lvl.progress * 100)}%` }} />
             </div>
           </div>
         </button>
-        <div aria-label={`${streak} day streak`} className={`glass flex h-[52px] shrink-0 items-center gap-1 rounded-2xl px-3 font-extrabold ${streak ? "" : "opacity-70"}`}>
-          <Flame size={22} strokeWidth={2.6} color={streak ? "#fb923c" : "currentColor"} fill={streak ? "#fb923c" : "none"} />
-          {streak}
+        <div className="relative shrink-0">
+          <button
+            aria-describedby="streak-tip"
+            aria-label={`${streak} day streak. Tap for details`}
+            onMouseEnter={() => setTip(true)}
+            onMouseLeave={() => setTip(false)}
+            onFocus={() => setTip(true)}
+            onBlur={() => setTip(false)}
+            onClick={() => {
+              sfx("tap");
+              setTip((t) => !t);
+              clearTimeout(tipTimer.current);
+              tipTimer.current = setTimeout(() => setTip(false), 6000);
+            }}
+            className={`glass flex h-[48px] items-center gap-1 rounded-2xl px-3 font-extrabold active:scale-95 ${streak ? "" : "opacity-80"}`}
+          >
+            <Flame size={22} strokeWidth={2.6} color={streak ? "#fb923c" : "currentColor"} fill={streak ? "#fb923c" : "none"} className={streak ? "flame" : ""} />
+            {streak}
+          </button>
+          {tip && (
+            <div id="streak-tip" role="tooltip" className="card absolute top-[calc(100%+10px)] right-0 z-30 w-[17rem] p-3 text-left text-sm font-bold">
+              <div className="font-display text-lg leading-tight">{streak > 0 ? `${streak}-day streak` : "No streak yet"}</div>
+              <p className="mt-1 leading-snug">
+                A streak counts the days in a row you snap something in Facts or find something in Hunt.
+                {streak > 0 && !streakDoneToday ? " Do one today to keep it alive." : streak > 0 ? " You're safe for today. Come back tomorrow!" : " Do one today to start yours."}
+              </p>
+              <p className="mt-1 text-xs text-[var(--ink-soft)]">
+                Best streak: {streakData.best} {streakData.best === 1 ? "day" : "days"}. Miss a whole day and it goes back to 0.
+              </p>
+            </div>
+          )}
         </div>
         <IconBtn label="Settings" onClick={openSettings}>
           <Settings size={22} strokeWidth={2.6} />
@@ -99,21 +135,21 @@ export function Home() {
 
       {/* logo + motto */}
       <div data-in className="flex flex-col items-center" style={{ marginTop: "clamp(8px, 3dvh, 32px)" }}>
-        <Logo size={desktop ? "clamp(4.4rem, 8vw, 6.4rem)" : undefined} />
-        <p className="mt-3 text-center text-[clamp(0.95rem,4vw,1.15rem)] font-bold opacity-95">Learn something extraordinary about the ordinary.</p>
-        <p className="glass mt-2 rounded-full px-3 py-1 text-center text-[clamp(0.72rem,3.2vw,0.85rem)] font-bold">Swap your next scroll for a snap.</p>
+        <Logo size={desktop ? "clamp(4.4rem, 8vw, 6.4rem)" : "clamp(3rem, min(19.5vw, 10.5dvh), 6.2rem)"} />
+        <p className="mt-2 text-center text-[clamp(0.85rem,3.7vw,1.15rem)] leading-snug font-bold opacity-95">Learn something extraordinary about the ordinary.</p>
+        <p className="glass hide-short mt-2 rounded-full px-3 py-1 text-center text-[clamp(0.72rem,3.2vw,0.85rem)] font-bold">Swap your next scroll for a snap.</p>
       </div>
 
       {/* Nimbus + compliment: the speech bubble comes out of Nimbus */}
       <div data-in className="flex flex-1 items-center justify-center" style={{ minHeight: 0 }}>
         <div className="flex w-full max-w-md items-start gap-3">
-          <div className="flex shrink-0 flex-col items-center pt-1" style={{ width: "clamp(112px, 33vw, 150px)" }}>
-            <Nimbus size={140} className="bob max-w-full" />
+          <div className="home-nimbus flex shrink-0 flex-col items-center pt-1" style={{ width: "clamp(88px, 28vw, 150px)" }}>
+            <Nimbus size={140} className="bob" />
             <span className="font-display mt-0.5 text-xl leading-none">Nimbus</span>
           </div>
-          <div className="bubble bubble-left min-w-0 flex-1 px-4 py-3.5" style={{ minHeight: "4.4rem" }}>
+          <div className="bubble bubble-left min-w-0 flex-1 px-3.5 py-3" style={{ minHeight: "4rem" }}>
             {compliment ? (
-              <p ref={textRef} className="text-[clamp(0.98rem,4.1vw,1.15rem)] font-bold leading-snug">
+              <p ref={textRef} className="text-[clamp(0.86rem,3.8vw,1.15rem)] font-bold leading-snug">
                 {compliment.split(" ").map((w, i) => (
                   <span key={i} className="inline-block">
                     {w}&nbsp;
@@ -135,9 +171,9 @@ export function Home() {
       <div className={desktop ? "mx-auto grid w-full max-w-3xl grid-cols-3 gap-4" : "mx-auto flex w-full max-w-md flex-col"} style={desktop ? undefined : { gap: "clamp(10px, 1.8dvh, 18px)" }}>
         <div data-in>
           <Btn
-            variant="sun"
-            className={desktop ? "flex-col !gap-3 text-[1.7rem]" : "text-[clamp(1.35rem,6vw,1.75rem)]"}
-            style={{ height: desktop ? "clamp(120px, 19dvh, 170px)" : "clamp(66px, 10.2dvh, 92px)" }}
+            variant="green"
+            className={desktop ? "idle flex-col !gap-3 text-[1.5rem]" : "idle text-[clamp(1.3rem,5.7vw,1.65rem)]"}
+            style={{ height: desktop ? "clamp(108px, 17dvh, 150px)" : "clamp(62px, 9.6dvh, 84px)", animationDelay: "0s" }}
             onClick={() => go("facts")}
           >
             <Camera size={desktop ? 44 : 28} strokeWidth={2.8} /> Facts
@@ -145,8 +181,9 @@ export function Home() {
         </div>
         <div data-in>
           <Btn
-            className={desktop ? "flex-col !gap-3 text-[1.7rem]" : "text-[clamp(1.35rem,6vw,1.75rem)]"}
-            style={{ height: desktop ? "clamp(120px, 19dvh, 170px)" : "clamp(66px, 10.2dvh, 92px)" }}
+            variant="red"
+            className={desktop ? "idle flex-col !gap-3 text-[1.5rem]" : "idle text-[clamp(1.3rem,5.7vw,1.65rem)]"}
+            style={{ height: desktop ? "clamp(108px, 17dvh, 150px)" : "clamp(62px, 9.6dvh, 84px)", animationDelay: "1.1s" }}
             onClick={() => go("hunt")}
           >
             <Search size={desktop ? 44 : 28} strokeWidth={2.8} /> Hunt
@@ -154,9 +191,9 @@ export function Home() {
         </div>
         <div data-in>
           <Btn
-            variant="violet"
-            className={desktop ? "flex-col !gap-3 text-[1.7rem]" : "text-[clamp(1.2rem,5.2vw,1.5rem)]"}
-            style={{ height: desktop ? "clamp(120px, 19dvh, 170px)" : "clamp(58px, 8.4dvh, 76px)" }}
+            variant="brown"
+            className={desktop ? "idle flex-col !gap-3 text-[1.5rem]" : "idle text-[clamp(1.15rem,5vw,1.4rem)]"}
+            style={{ height: desktop ? "clamp(108px, 17dvh, 150px)" : "clamp(54px, 7.8dvh, 70px)", animationDelay: "2.2s" }}
             onClick={() => go("board")}
           >
             <StickyNote size={desktop ? 44 : 28} strokeWidth={2.8} /> Bulletin Board

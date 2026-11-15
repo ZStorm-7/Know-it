@@ -3,20 +3,28 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib/client/api";
 import { sfx } from "@/lib/client/audio";
 import { signInWithGoogle, signOutCloud, syncNow, useCloud } from "@/lib/client/cloud";
-import { signOut, setProfile, useStore } from "@/lib/client/store";
+import { setProfile, signOut, useStore } from "@/lib/client/store";
 import { useNav } from "./app";
 import { RankBadge } from "./art";
+import { PasswordField, passwordProblem } from "./password";
 import { Btn, toast } from "./ui";
 
-/** Account area for Settings: who you are, your rank, a recovery code, sign out and delete. */
+type Panel = null | "password" | "delete";
+
+/** Account area for Settings: who you are, your rank, change password, sign out and delete. */
 export function AccountSection({ onClose }: { onClose: () => void }) {
   const { go } = useNav();
   const profile = useStore((s) => s.profile);
   const best = useStore((s) => s.huntBest);
   const notes = useStore((s) => s.notes.length);
   const [rank, setRank] = useState<number | null>(null);
-  const [showCode, setShowCode] = useState(false);
-  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [panel, setPanel] = useState<Panel>(null);
+  const [oldPw, setOldPw] = useState("");
+  const [newPw, setNewPw] = useState("");
+  const [newPw2, setNewPw2] = useState("");
+  const [delPw, setDelPw] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!profile) return;
@@ -35,29 +43,65 @@ export function AccountSection({ onClose }: { onClose: () => void }) {
       <div className="rounded-2xl border-[2.5px] border-[var(--ink)] p-4">
         <div className="font-extrabold">Guest</div>
         <p className="mt-1 text-sm text-[var(--ink-soft)]">Create an account to join the Hunt leaderboard, or sign in if you already have one.</p>
-        <div className="mt-3 flex gap-3">
+        <div className="mt-3">
           <Btn
             variant="sun"
-            className="h-14"
+            className="h-[50px]"
             onClick={() => {
               onClose();
               go("username");
             }}
           >
-            Create or sign in
+            Create account or sign in
           </Btn>
         </div>
       </div>
     );
   }
 
-  const copy = async () => {
+  const hasPassword = profile.hasPassword === true;
+  const reset = () => {
+    setPanel(null);
+    setOldPw("");
+    setNewPw("");
+    setNewPw2("");
+    setDelPw("");
+    setError(null);
+  };
+
+  const savePassword = async () => {
+    const problem = passwordProblem(newPw, profile.name);
+    if (problem) return setError(problem);
+    if (newPw !== newPw2) return setError("The new passwords don't match.");
+    setBusy(true);
+    setError(null);
     try {
-      await navigator.clipboard.writeText(profile.token);
-      toast("Recovery code copied. Keep it somewhere safe.");
-    } catch {
-      setShowCode(true);
-      toast("Couldn't copy. Select the code below instead.");
+      const r = await api.changePassword(profile.name, profile.token, oldPw, newPw);
+      setProfile({ name: profile.name, token: r.token, hasPassword: true });
+      sfx("chime");
+      toast(hasPassword ? "Password changed. Other phones were signed out." : "Password added. Your account is protected.");
+      reset();
+    } catch (e) {
+      sfx("buzz");
+      setError(e instanceof Error ? e.message : "Couldn't change the password.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const removeAccount = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      await api.deleteAccount(profile.name, profile.token, delPw);
+      setProfile(null);
+      toast("Account deleted. Your username is free again.");
+      reset();
+    } catch (e) {
+      sfx("buzz");
+      setError(e instanceof Error ? e.message : "Couldn't delete the account.");
+    } finally {
+      setBusy(false);
     }
   };
 
@@ -73,53 +117,86 @@ export function AccountSection({ onClose }: { onClose: () => void }) {
         </div>
       </div>
 
-      <div className="mt-3 flex flex-col gap-2.5">
-        <Btn variant="white" className="h-14" onClick={copy}>
-          Copy my recovery code
-        </Btn>
-        {showCode && (
-          <code className="block rounded-xl bg-slate-100 p-3 text-center text-sm font-bold break-all text-[var(--ink)] select-text dark:bg-white/10 dark:text-[var(--card-ink)]">
-            {profile.token}
-          </code>
-        )}
-        <p className="text-xs text-[var(--ink-soft)]">
-          Use your username plus this code to sign in on another phone and get your leaderboard spot back. Anyone with the code can use your account, so don&apos;t share it.
-        </p>
-        <div className="flex gap-3">
-          <Btn
-            variant="white"
-            className="h-14"
-            onClick={() => {
-              signOut();
-              sfx("whoosh");
-              toast("Signed out. Your notes stay on this phone.");
-            }}
-          >
-            Sign out
+      {!hasPassword && panel !== "password" && (
+        <div className="mt-3 rounded-xl border-2 border-[var(--ink)] bg-orange-100 p-3 text-sm font-bold text-[var(--ink)]">
+          This account has no password yet. Add one so only you can sign in as {profile.name}.
+        </div>
+      )}
+
+      {panel === null && (
+        <div className="mt-3 flex flex-col gap-2.5">
+          <Btn variant="white" className="h-[50px]" onClick={() => setPanel("password")}>
+            {hasPassword ? "Change password" : "Add a password"}
           </Btn>
-          {!confirmDelete ? (
-            <Btn variant="white" className="h-14" onClick={() => setConfirmDelete(true)}>
-              Delete account
-            </Btn>
-          ) : (
+          <div className="flex gap-3">
             <Btn
-              className="h-14"
-              onClick={async () => {
-                try {
-                  await api.deleteAccount(profile.name, profile.token);
-                  setProfile(null);
-                  setConfirmDelete(false);
-                  toast("Account deleted. Your username is free again.");
-                } catch (e) {
-                  toast(e instanceof Error ? e.message : "Couldn't delete the account");
-                }
+              variant="white"
+              className="h-[50px]"
+              onClick={() => {
+                api.logout(profile.name, profile.token);
+                signOut();
+                sfx("whoosh");
+                toast("Signed out. Your notes stay on this phone.");
               }}
             >
-              Tap again to delete
+              Sign out
             </Btn>
-          )}
+            <Btn variant="white" className="h-[50px]" onClick={() => setPanel("delete")}>
+              Delete account
+            </Btn>
+          </div>
         </div>
-      </div>
+      )}
+
+      {panel === "password" && (
+        <form
+          className="mt-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            savePassword();
+          }}
+        >
+          {/* browsers use this hidden field to offer to save the password for the right account */}
+          <input type="text" name="username" autoComplete="username" value={profile.name} readOnly hidden />
+          {hasPassword && <PasswordField label="Current password" value={oldPw} onChange={setOldPw} autoComplete="current-password" placeholder="Your current password" />}
+          <PasswordField label="New password" value={newPw} onChange={setNewPw} autoComplete="new-password" meter />
+          <PasswordField label="Type the new one again" value={newPw2} onChange={setNewPw2} onEnter={savePassword} autoComplete="new-password" placeholder="Same password" />
+          {hasPassword && <p className="mt-2 text-xs text-[var(--ink-soft)]">Changing your password signs you out on your other phones.</p>}
+          {error && (
+            <p role="alert" className="mt-2 rounded-xl border-2 border-[var(--ink)] bg-orange-100 px-3 py-2 text-sm font-bold text-[var(--ink)]">
+              {error}
+            </p>
+          )}
+          <div className="mt-3 flex gap-3">
+            <Btn variant="white" className="h-[50px]" onClick={reset}>
+              Cancel
+            </Btn>
+            <Btn variant="green" className="h-[50px]" disabled={busy || !newPw || !newPw2 || (hasPassword && !oldPw)} onClick={savePassword}>
+              {busy ? "Saving..." : "Save password"}
+            </Btn>
+          </div>
+        </form>
+      )}
+
+      {panel === "delete" && (
+        <div className="mt-2">
+          <p className="text-sm font-bold">This removes {profile.name} and its leaderboard score for good, and frees the name. Your notes stay on this phone.</p>
+          {hasPassword && <PasswordField label="Enter your password to confirm" value={delPw} onChange={setDelPw} onEnter={removeAccount} autoComplete="current-password" placeholder="Your password" />}
+          {error && (
+            <p role="alert" className="mt-2 rounded-xl border-2 border-[var(--ink)] bg-orange-100 px-3 py-2 text-sm font-bold text-[var(--ink)]">
+              {error}
+            </p>
+          )}
+          <div className="mt-3 flex gap-3">
+            <Btn variant="white" className="h-[50px]" onClick={reset}>
+              Cancel
+            </Btn>
+            <Btn variant="red" className="h-[50px]" disabled={busy || (hasPassword && !delPw)} onClick={removeAccount}>
+              {busy ? "Deleting..." : "Delete for good"}
+            </Btn>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -146,7 +223,7 @@ export function CloudSection() {
             Sign in with Google to keep your notes, photos, XP and streak safe, and bring them to any phone.
           </p>
           <div className="mt-3">
-            <Btn variant="sun" className="h-14" disabled={c.status === "syncing"} onClick={() => signInWithGoogle()}>
+            <Btn variant="sun" className="h-[50px]" disabled={c.status === "syncing"} onClick={() => signInWithGoogle()}>
               {c.status === "syncing" ? "Signing in..." : "Sign in with Google"}
             </Btn>
           </div>
@@ -160,12 +237,12 @@ export function CloudSection() {
             {c.status === "syncing" ? "Syncing..." : c.status === "error" ? "Last sync had a problem." : `Last synced ${ago(c.lastSync)}.`} Changes save automatically.
           </p>
           <div className="mt-3 flex gap-3">
-            <Btn variant="white" className="h-14" disabled={c.status === "syncing"} onClick={() => syncNow()}>
+            <Btn variant="white" className="h-[50px]" disabled={c.status === "syncing"} onClick={() => syncNow()}>
               Sync now
             </Btn>
             <Btn
               variant="white"
-              className="h-14"
+              className="h-[50px]"
               onClick={() => {
                 signOutCloud();
                 toast("Signed out of cloud sync. Your data stays on this phone.");

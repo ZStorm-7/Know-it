@@ -15,39 +15,90 @@ export function Nimbus({
   className?: string;
 }) {
   const id = useId().replace(/:/g, "");
-  const mouth =
-    mood === "happy"
-      ? "M52 55 Q60 63 68 55"
-      : mood === "wow"
-        ? "M56 56 a4 5 0 1 0 8 0 a4 5 0 1 0 -8 0"
-        : mood === "sad"
-          ? "M52 60 Q60 53 68 60"
-          : "M53 57 L67 56";
+  const ink = "#1e293b";
   return (
-    <svg
-      width={size}
-      height={(size * 80) / 120}
-      viewBox="0 0 120 80"
-      className={`nimbus ${className}`}
-      aria-hidden
-    >
+    <svg width={size} height={(size * 80) / 120} viewBox="0 0 120 80" className={`nimbus ${className}`} aria-hidden shapeRendering="geometricPrecision">
       <defs>
-        <linearGradient id={`ng${id}`} x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={`nb${id}`} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#ffffff" />
-          <stop offset="1" stopColor="#dbeafe" />
+          <stop offset="0.55" stopColor="#f3f9ff" />
+          <stop offset="1" stopColor="#c9e1fb" />
         </linearGradient>
+        <radialGradient id={`ch${id}`} cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stopColor="#fb7185" stopOpacity="0.85" />
+          <stop offset="1" stopColor="#fb7185" stopOpacity="0" />
+        </radialGradient>
+        <clipPath id={`cp${id}`}>
+          <path d={CLOUD_PATH} />
+        </clipPath>
       </defs>
-      <path d={CLOUD_PATH} transform="translate(0 4)" fill="rgba(30,41,99,0.18)" />
-      <path d={CLOUD_PATH} fill={`url(#ng${id})`} stroke="#1e293b" strokeWidth="2.5" strokeLinejoin="round" />
-      <g className="nimbus-eyes">
-        <ellipse cx="50" cy="45" rx="3.6" ry="4.6" fill="#1e293b" />
-        <ellipse cx="70" cy="45" rx="3.6" ry="4.6" fill="#1e293b" />
-        <circle cx="51.2" cy="43.4" r="1.3" fill="#fff" />
-        <circle cx="71.2" cy="43.4" r="1.3" fill="#fff" />
+
+      {/* soft ground shadow */}
+      <ellipse cx="60" cy="76.5" rx="34" ry="2.8" fill="rgba(30,41,99,0.2)" />
+
+      {/* body */}
+      <path d={CLOUD_PATH} fill={`url(#nb${id})`} stroke={ink} strokeWidth="2.6" strokeLinejoin="round" />
+      <g clipPath={`url(#cp${id})`}>
+        {/* gentle shading along the bottom and the right side */}
+        <path d="M0 62 Q60 88 120 58 V90 H0 Z" fill="rgba(110,160,230,0.28)" />
+        <path d="M100 20 Q124 36 112 66 L120 80 V10 Z" fill="rgba(110,160,230,0.12)" />
       </g>
-      <ellipse cx="42" cy="53" rx="5" ry="3" fill="#fda4af" opacity="0.8" />
-      <ellipse cx="78" cy="53" rx="5" ry="3" fill="#fda4af" opacity="0.8" />
-      <path d={mouth} fill={mood === "wow" ? "#1e293b" : "none"} stroke="#1e293b" strokeWidth="2.5" strokeLinecap="round" />
+      {/* glossy highlights on the puffs */}
+      <path d="M17 47 C19 42.5 23 40.2 27.5 40.8" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.95" />
+      <path d="M40 24 C43.5 19.5 49 18 54 19.6" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.95" />
+      <path d="M72 17 C76 14 81 13.8 85 15.6" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" opacity="0.85" />
+
+      {/* eyebrows */}
+      <g fill="none" stroke={ink} strokeWidth="2.2" strokeLinecap="round">
+        {mood === "wow" && (
+          <>
+            <path d="M44.5 36 Q50 32.5 55.5 36" />
+            <path d="M64.5 36 Q70 32.5 75.5 36" />
+          </>
+        )}
+        {mood === "think" && (
+          <>
+            <path d="M44.5 38.5 Q50 36.5 55.5 38" />
+            <path d="M64.5 35 Q70 31.5 75.5 34.5" />
+          </>
+        )}
+        {mood === "sad" && (
+          <>
+            <path d="M44.5 38.5 L55 35.5" />
+            <path d="M65 35.5 L75.5 38.5" />
+          </>
+        )}
+      </g>
+
+      {/* eyes with two highlights */}
+      <g className="nimbus-eyes">
+        <ellipse cx="50" cy="45" rx="4" ry="5.4" fill="#0f172a" />
+        <ellipse cx="70" cy="45" rx="4" ry="5.4" fill="#0f172a" />
+        <circle cx="51.5" cy="42.6" r="1.7" fill="#fff" />
+        <circle cx="71.5" cy="42.6" r="1.7" fill="#fff" />
+        <circle cx="48.8" cy="47.6" r="0.8" fill="#fff" opacity="0.9" />
+        <circle cx="68.8" cy="47.6" r="0.8" fill="#fff" opacity="0.9" />
+      </g>
+
+      {/* rosy cheeks */}
+      <ellipse cx="40" cy="54" rx="6.5" ry="4" fill={`url(#ch${id})`} />
+      <ellipse cx="80" cy="54" rx="6.5" ry="4" fill={`url(#ch${id})`} />
+
+      {/* mouth */}
+      {mood === "happy" && (
+        <>
+          <path d="M52.5 54.2 Q60 65 67.5 54.2 Z" fill="#1e293b" stroke={ink} strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M56 59.6 Q60 63.4 64 59.6 Q60 57.4 56 59.6 Z" fill="#fb7185" />
+        </>
+      )}
+      {mood === "wow" && (
+        <>
+          <ellipse cx="60" cy="58.5" rx="4.2" ry="5.4" fill="#1e293b" stroke={ink} strokeWidth="1.6" />
+          <ellipse cx="60" cy="61.2" rx="2.6" ry="2" fill="#fb7185" />
+        </>
+      )}
+      {mood === "sad" && <path d="M52.5 61 Q60 53.5 67.5 61" fill="none" stroke={ink} strokeWidth="2.4" strokeLinecap="round" />}
+      {mood === "think" && <path d="M54 58.5 Q58.5 56.5 66.5 58" fill="none" stroke={ink} strokeWidth="2.4" strokeLinecap="round" />}
     </svg>
   );
 }

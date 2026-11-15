@@ -1,6 +1,7 @@
 "use client";
 import gsap from "gsap";
 import { useEffect, useRef } from "react";
+import { Sparkle } from "./art";
 
 export function Logo({ size = "clamp(3.8rem, 19.5vw, 6.2rem)", animate = true }: { size?: string; animate?: boolean }) {
   const ref = useRef<HTMLHeadingElement>(null);
@@ -15,6 +16,7 @@ export function Logo({ size = "clamp(3.8rem, 19.5vw, 6.2rem)", animate = true }:
   }, [animate]);
   const word = "Know it";
   return (
+    <div className="relative inline-block">
     <h1
       ref={ref}
       className="font-display select-none text-center leading-none tracking-wide text-white"
@@ -36,5 +38,9 @@ export function Logo({ size = "clamp(3.8rem, 19.5vw, 6.2rem)", animate = true }:
         ),
       )}
     </h1>
+      <span className="twinkle absolute -top-1 -right-3" style={{ animationDelay: "0s" }}><Sparkle size={20} /></span>
+      <span className="twinkle absolute top-1/2 -left-5" style={{ animationDelay: "0.8s" }}><Sparkle size={14} color="#fff" /></span>
+      <span className="twinkle absolute -bottom-2 right-1/4" style={{ animationDelay: "1.5s" }}><Sparkle size={16} /></span>
+    </div>
   );
 }

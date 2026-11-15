@@ -219,14 +219,17 @@ textarea {
 .btn3d.sun { --c: var(--sun); --d: var(--sun-dark); color: var(--ink); text-shadow: none; }
 .btn3d.mint { --c: var(--mint); --d: var(--mint-dark); }
 .btn3d.violet { --c: var(--violet); --d: var(--violet-dark); }
+.btn3d.green { --c: #15803d; --d: #14532d; }
+.btn3d.red { --c: #d62839; --d: #7f1226; }
+.btn3d.brown { --c: #b45309; --d: #78350f; }
 .btn3d.white { --c: #fff; --d: #cbd5e1; color: var(--ink); text-shadow: none; }
 
 .icon-btn {
   display: grid;
   place-items: center;
-  width: 52px;
-  height: 52px;
-  border-radius: 18px;
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
   border: 2.5px solid var(--ink);
   background: #fff;
   color: var(--ink);
@@ -320,8 +323,8 @@ textarea {
 
 /* ---------- Camera ---------- */
 .shutter {
-  width: 88px;
-  height: 88px;
+  width: 82px;
+  height: 82px;
   border-radius: 50%;
   border: 5px solid #fff;
   background: transparent;
@@ -330,8 +333,8 @@ textarea {
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
 }
 .shutter > span {
-  width: 66px;
-  height: 66px;
+  width: 62px;
+  height: 62px;
   border-radius: 50%;
   background: #fff;
   transition: transform 0.12s;
@@ -496,3 +499,111 @@ html[data-contrast="true"] .icon-btn { text-shadow: none; }
 html[data-contrast="true"] .btn3d,
 html[data-contrast="true"] .card,
 html[data-contrast="true"] .bubble { border-width: 4px; }
+
+/* Full-screen views (camera, Facts, Hunt, board) cover the whole window on a computer,
+   so their gradients and backgrounds are never cut off by the centered column. */
+html[data-device="desktop"] .bleed { position: fixed; }
+
+/* ---------- Phone-only fixes (computers are untouched) ---------- */
+/* Heavy effects make phones stutter: blur behind glass, a huge pulsing gradient, shadows on moving clouds. */
+html[data-device="phone"] .glass { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(255, 255, 255, 0.3); }
+html[data-device="phone"] .sky::before { animation: none; inset: 0; }
+html[data-device="phone"] .drift { filter: none; will-change: transform; }
+html[data-device="phone"] .sq-slide,
+html[data-device="phone"] .sq-bob { will-change: transform; }
+html[data-device="phone"] .squiggles .sq-extra { display: none; }
+/* Long-press on photos and notes should not open the iOS save/copy menu or select text. */
+html[data-device="phone"] img,
+html[data-device="phone"] [data-note],
+html[data-device="phone"] .sticky { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
+/* iOS zooms the page when a field's text is smaller than 16px. */
+html[data-device="phone"] input,
+html[data-device="phone"] select,
+html[data-device="phone"] textarea { font-size: max(16px, 1em); }
+/* Text links need a thumb-sized tap area (at least 44px tall). */
+html[data-device="phone"] button.underline { min-height: 44px; padding: 0 10px; }
+html[data-device="phone"] .icon-btn { min-width: 44px; min-height: 44px; }
+
+/* Short phones (small iPhones, older Androids): shrink the decorations so nothing collides. */
+@media (max-height: 720px) {
+  html[data-device="phone"] .hide-short { display: none; }
+  html[data-device="phone"] .home-nimbus svg { width: clamp(72px, 15dvh, 110px); height: auto; }
+  html[data-device="phone"] .device-art { width: clamp(56px, 11dvh, 90px); height: auto; }
+  html[data-device="phone"] .choose-nimbus svg { width: 76px; height: auto; }
+}
+html[data-device="phone"] .tap-start { background: #fff; color: var(--ink); border: 3px solid var(--ink); box-shadow: 0 5px 0 rgba(15, 23, 42, 0.3); backdrop-filter: none; }
+/* Settings pickers: the segmented buttons must be at least 44px tall for a thumb. */
+html[data-device="phone"] .seg button { min-height: 44px; padding-left: 10px; padding-right: 10px; }
+html[data-device="phone"] .toggle { transform: scale(1.1); transform-origin: right center; }
+
+/* ---------- Micro-animations ---------- */
+/* Main buttons breathe and get an occasional shine. */
+.btn3d { overflow: hidden; }
+.btn3d.idle { animation: breathe 3.6s ease-in-out infinite; }
+@keyframes breathe { 0%, 100% { scale: 1; } 50% { scale: 1.016; } }
+.btn3d.idle::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -70%;
+  width: 38%;
+  pointer-events: none;
+  background: linear-gradient(100deg, transparent, rgba(255, 255, 255, 0.38), transparent);
+  transform: skewX(-20deg);
+  animation: shine 6s ease-in-out infinite;
+  animation-delay: inherit;
+}
+@keyframes shine { 0%, 62% { left: -70%; } 100% { left: 140%; } }
+
+/* Streak flame flickers. */
+.flame { transform-origin: 50% 90%; animation: flame 1.1s ease-in-out infinite alternate; }
+@keyframes flame { from { transform: scaleY(1) rotate(-3deg); } to { transform: scaleY(1.14) rotate(3deg); } }
+
+/* Level bar: a light sweeps across the fill. */
+.shimmer { position: relative; overflow: hidden; }
+.shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(100deg, transparent 20%, rgba(255, 255, 255, 0.7) 50%, transparent 80%);
+  transform: translateX(-100%);
+  animation: sweep 2.6s ease-in-out infinite;
+}
+@keyframes sweep { to { transform: translateX(100%); } }
+
+/* Camera shutter: a soft ring pulses outward. */
+.shutter { position: relative; }
+.shutter::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.7);
+  animation: ring 2.2s ease-out infinite;
+  pointer-events: none;
+}
+@keyframes ring { 0% { transform: scale(0.92); opacity: 0.9; } 100% { transform: scale(1.22); opacity: 0; } }
+
+/* Twinkles around the logo. */
+.twinkle { animation: twinkle-pop 2.4s ease-in-out infinite; }
+@keyframes twinkle-pop { 0%, 100% { transform: scale(0.4) rotate(0deg); opacity: 0.2; } 50% { transform: scale(1) rotate(25deg); opacity: 1; } }
+
+/* Leaderboard rows slide in one after another. */
+.row-in { animation: row-in 0.5s cubic-bezier(.3, 1.4, .5, 1) both; animation-delay: calc(var(--i, 0) * 60ms); }
+@keyframes row-in { from { opacity: 0; transform: translateX(-24px); } to { opacity: 1; transform: none; } }
+
+/* Cards lift a little under a mouse (computers only; phones have no hover). */
+@media (hover: hover) and (pointer: fine) {
+  .card { transition: translate 0.2s ease; }
+  button.card:hover, .card.lift:hover { translate: 0 -3px; }
+  .btn3d:hover { filter: brightness(1.06); }
+}
+
+/* Sticky notes sway gently on computers. */
+html[data-device="desktop"] .sticky { animation: sway 5.5s ease-in-out infinite; transform-origin: 50% 0; }
+@keyframes sway { 0%, 100% { rotate: -0.8deg; } 50% { rotate: 0.8deg; } }
+
+/* The timer ring shakes harder in the last seconds (already defined) and the trophy glints. */
+.glint { animation: glint 3s ease-in-out infinite; }
+@keyframes glint { 0%, 80%, 100% { filter: brightness(1); } 90% { filter: brightness(1.35); } }

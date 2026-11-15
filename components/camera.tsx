@@ -117,7 +117,7 @@ export function Camera({
   };
 
   return (
-    <div className="absolute inset-0 overflow-hidden bg-slate-950">
+    <div className="bleed absolute inset-0 overflow-hidden bg-slate-950">
       <video
         ref={video}
         playsInline
@@ -139,7 +139,7 @@ export function Camera({
       )}
 
       {/* top bar */}
-      <div className="absolute inset-x-0 top-0 z-10 flex items-start gap-3 p-4">
+      <div className="absolute inset-x-0 top-0 z-10 mx-auto flex w-full max-w-2xl items-start gap-3 p-4">
         <IconBtn label="Back" onClick={onBack}>
           <ArrowLeft size={22} strokeWidth={3} />
         </IconBtn>
@@ -155,7 +155,7 @@ export function Camera({
 
       {/* bottom controls */}
       {!preview && (state === "live" || state === "starting") && (
-        <div className="absolute inset-x-0 bottom-0 z-10 flex items-center justify-around px-8" style={{ paddingBottom: "max(28px, env(safe-area-inset-bottom))" }}>
+        <div className="absolute inset-x-0 bottom-0 z-10 mx-auto flex max-w-md items-center justify-around px-8" style={{ paddingBottom: "max(28px, env(safe-area-inset-bottom))" }}>
           <IconBtn label="Pick a photo" onClick={() => fileInput.current?.click()}>
             <ImageIcon size={22} strokeWidth={2.6} />
           </IconBtn>
@@ -173,13 +173,15 @@ export function Camera({
         <div className="absolute inset-0 z-20 bg-slate-950">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={preview} alt="Preview" className="absolute inset-0 h-full w-full object-cover" />
-          <div className="absolute inset-x-0 bottom-0 flex gap-3 bg-gradient-to-t from-black/80 to-transparent px-5 pt-16" style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}>
-            <Btn variant="white" className="h-16 text-xl" onClick={() => setPreview(null)}>
+          <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 to-transparent px-5 pt-16" style={{ paddingBottom: "max(24px, env(safe-area-inset-bottom))" }}>
+           <div className="mx-auto flex w-full max-w-md gap-3">
+            <Btn variant="white" className="h-[58px] text-lg" onClick={() => setPreview(null)}>
               <RotateCcw size={20} strokeWidth={3} /> Retake
             </Btn>
-            <Btn variant="mint" className="h-16 text-xl" onClick={() => onCapture(preview)}>
+            <Btn variant="mint" className="h-[58px] text-lg" onClick={() => onCapture(preview)}>
               <Check size={22} strokeWidth={3.2} /> Use this
             </Btn>
+           </div>
           </div>
         </div>
       )}
@@ -203,21 +205,21 @@ export function Camera({
             </p>
             <div className="mt-5 flex flex-col gap-3">
               {state === "explain" && (
-                <Btn variant="mint" className="h-16 text-xl" onClick={allow}>
+                <Btn variant="mint" className="h-[58px] text-lg" onClick={allow}>
                   Turn on camera
                 </Btn>
               )}
               {state !== "explain" && (
-                <Btn variant="mint" className="h-16 text-xl" onClick={() => setState("starting")}>
+                <Btn variant="mint" className="h-[58px] text-lg" onClick={() => setState("starting")}>
                   Try again
                 </Btn>
               )}
               {state !== "explain" && isPhone && (
-                <Btn variant="sun" className="h-14" onClick={() => nativeInput.current?.click()}>
+                <Btn variant="sun" className="h-[50px]" onClick={() => nativeInput.current?.click()}>
                   Open phone camera
                 </Btn>
               )}
-              <Btn variant="white" className="h-14" onClick={() => fileInput.current?.click()}>
+              <Btn variant="white" className="h-[50px]" onClick={() => fileInput.current?.click()}>
                 {isPhone ? "Pick from photos" : "Pick a photo from files"}
               </Btn>
             </div>
