@@ -27,7 +27,7 @@ Theme: Elevate the Ordinary. Desktop-only web app, installable from the browser 
    - Then a sticky note with the AI nickname (handwriting) is pinned to the Bulletin Board (pin-drop placing animation). Clicking a note shows its photo and facts.
    - Buttons: Main Menu / Take Another Picture.
 5. Hunt: 3 lives, timer pauses while the AI checks. `time = max(15, round(60 * 0.92^(round-1)))`. Difficulty: broad traits → materials/categories → specific objects → combinations. Game over shows score, best score, what the AI saw. Hunt photos do NOT go on the board.
-6. Bulletin Board (Milanote-style): scroll-wheel zoom, drag to pan, click to lift + toolbar (Rename, View facts, Unpin), double-click note to open facts, drag to move, drag-to-trash zone, Undo toast, fit-all button, double-click cork to toggle zoom. Positions saved on device.
+6. Bulletin Board (Milanote-style): scroll-wheel zoom, drag to pan, click to lift + toolbar (Rename, View facts, Unpin), click note to open facts, drag to move, drag-to-trash zone, Undo toast, fit-all button, double-click cork to toggle zoom. Positions saved on device.
 7. Settings: theme, music volume, SFX toggle, reduce motion, text size, fact style (kid/normal/nerdy), Hunt starting difficulty, replay tutorial, reset progress, credits. No mute button elsewhere.
 
 ## Music (Storyblocks, loop per place, crossfade)

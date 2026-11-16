@@ -1,8 +1,8 @@
 "use client";
-import { ReactNode, useRef, useState } from "react";
+import { ReactNode, useState } from "react";
 import { LANGUAGES } from "@/lib/client/languages";
 import { sfx } from "@/lib/client/audio";
-import { exportBackup, importBackup, resetProgress, setSetting, Settings, update, useStore } from "@/lib/client/store";
+import { resetProgress, setSetting, Settings, update, useStore } from "@/lib/client/store";
 import { AccountSection, CloudSection } from "./account";
 import { Btn, Sheet, toast } from "./ui";
 
@@ -55,28 +55,6 @@ function Seg<T extends string>({ value, options, onChange }: { value: T; options
 export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const s = useStore((st) => st.settings);
   const [confirmReset, setConfirmReset] = useState(false);
-  const fileRef = useRef<HTMLInputElement>(null);
-
-  const backup = async () => {
-    const blob = await exportBackup();
-    const a = document.createElement("a");
-    a.href = URL.createObjectURL(blob);
-    a.download = `know-it-backup-${new Date().toISOString().slice(0, 10)}.json`;
-    a.click();
-    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-    toast("Backup saved to your downloads");
-  };
-  const restore = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const f = e.target.files?.[0];
-    e.target.value = "";
-    if (!f) return;
-    try {
-      const n = await importBackup(f);
-      toast(`Restored ${n} ${n === 1 ? "note" : "notes"}`);
-    } catch (err) {
-      toast(err instanceof Error ? err.message : "Couldn't read that file");
-    }
-  };
   const set = <K extends keyof Settings>(k: K) => (v: Settings[K]) => setSetting(k, v);
 
   return (
@@ -138,13 +116,6 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
         </div>
 
         <div className="mt-4 flex flex-col gap-3">
-          <Btn variant="white" className="h-[50px]" onClick={backup}>
-            Save a backup
-          </Btn>
-          <Btn variant="white" className="h-[50px]" onClick={() => fileRef.current?.click()}>
-            Restore a backup
-          </Btn>
-          <input ref={fileRef} type="file" accept="application/json,.json" className="hidden" onChange={restore} />
           <Btn
             variant="white"
             className="h-[50px]"

@@ -279,28 +279,6 @@ export function addLeader(name: string, score: number) {
   }));
 }
 
-// ---------- Backup and restore ----------
-export async function exportBackup(): Promise<Blob> {
-  const st = getState();
-  const details: Record<string, NoteDetail> = {};
-  for (const n of st.notes) {
-    const d = await getNoteDetail(n.id).catch(() => undefined);
-    if (d) details[n.id] = d;
-  }
-  return new Blob([JSON.stringify({ app: "curio", version: 1, savedAt: new Date().toISOString(), state: st, details })], {
-    type: "application/json",
-  });
-}
-
-export async function importBackup(file: File): Promise<number> {
-  const data = JSON.parse(await file.text());
-  if (data?.app !== "curio" || !data.state || !Array.isArray(data.state.notes)) throw new Error("This is not a Curio backup file.");
-  for (const [id, d] of Object.entries(data.details ?? {})) await set(`note:${id}`, d);
-  const incoming = data.state as State;
-  update(() => ({ ...DEFAULT, ...incoming, settings: { ...DEFAULT_SETTINGS, ...incoming.settings } }));
-  return incoming.notes.length;
-}
-
 // ---------- Leaderboard account ----------
 export function setProfile(p: { name: string; token: string; hasPassword?: boolean } | null) {
   update((s) => ({ ...s, profile: p, guest: p ? false : s.guest }));

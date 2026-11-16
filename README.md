@@ -1,71 +1,93 @@
+<div align="center">
+
 # Know it
 
-**Learn something extraordinary about the ordinary.** Swap your next scroll for a snap. Point your webcam at (or upload a photo of) any everyday object and Nimbus the cloud tells you its secrets.
+### Learn something extraordinary about the ordinary.
+**Swap your next scroll for a snap.**
 
-Bay Valley Hacks · Theme: *Elevate the Ordinary*
+Bay Valley Hacks 2026 · Theme: *Elevate the Ordinary*
 
-**Know it is a desktop web app.** It runs in any modern desktop browser (Chrome, Edge, Firefox, Safari) with a webcam or a folder of photos. It is built for mouse and keyboard, and has no phone layout.
+**[Try it live: knowitapp.vercel.app](https://knowitapp.vercel.app)** · Desktop web app · No install, no account needed
 
-Live: https://knowitapp.vercel.app
+![Know it home screen](docs/screenshots/01-home.png)
 
-## Features
-- **Facts:** snap with your webcam or upload a photo. The AI outlines the object (click the right one if it is unsure), shows 5–10 fresh facts (never repeating facts you have already seen), then a quick A/B/C quiz. Photos of people get fun, respectful facts about the clothing and surroundings. A "Wrong object?" button lets you correct the AI.
-- **Bulletin Board:** every object becomes a handwritten sticky note with an AI nickname, pinned to a cork board. Scroll to zoom, drag the cork to pan, drag notes to move them, drag to the trash to unpin (with undo), double-click a note to open its photo and facts, rename notes, and share a note as an image card.
-- **Hunt:** a timed scavenger game. Find the object before the timer runs out; each find is harder and faster (60 s shrinking 8% per round, 15 s floor). 3 lives. Tiers: Ordinary, Remarkable, Legendary, Mythic. Timer pauses while the AI checks your photo.
-- **Leaderboard:** username and password accounts (usernames are checked by Gemini for anything inappropriate), Hunt scores ranked with gold, silver and bronze icons.
-- **Progress:** XP and brain levels with a level-up animation, daily streaks (click the flame for details), collection badges by category, a welcome-back card.
-- **Nimbus:** the cloud mascot gives AI compliments, runs the tutorial and reacts to what you do.
-- **Cloud sync:** sign in with Google to keep notes, photos, XP, streak and settings safe and share them between computers.
-- **Settings:** light, dark or auto theme; music volume; sound effects; reduce motion; text size; language for facts, Hunt and compliments; high contrast; fact style (kid, normal, nerdy); Hunt starting difficulty; backup and restore; replay tutorial; reset progress.
-- Looping music per screen (Home: Via Portugal, Facts: Joyful Ride, Hunt: Courage, Board: Fresh Story) with crossfades. Only one open tab plays music at a time. Music starts on your first click or key press.
-- Installable from the browser as a desktop app, works offline for screens you have already opened, and updates itself with a "new version" banner.
+</div>
 
-## What changed in the desktop-only version
-- Removed the "Phone or Computer" start menu and the Device setting. The app is always the desktop layout.
-- Removed every phone-only feature: vibration (and its setting), flip camera, "Open phone camera", the iPhone volume note, the phone audio player, the portrait lock, iOS home-screen metadata and all phone-only CSS.
-- Home buttons are always three tall tiles in a row; the app sits in a centered column up to 900 px wide with full-window backgrounds.
-- Webcam and file upload only. Copy now says click, scroll and computer instead of tap, pinch and phone.
-- Hunt music changed to Courage.
-- Fixed Nimbus: highlights no longer spill over the outline, and it scales to fit its column.
+## The idea
+I used to doomscroll: pick up the phone for a minute, look up an hour later, and remember nothing. Know it replaces that habit with something that gives a little curiosity back. Point your webcam at any everyday object (a mug, a stapler, a zipper) and an AI tells you the surprising story behind it, then pins it to a corkboard you can look back on. The things people ignore most are the things around them, and every one of them has a story.
 
-## Run it
+## Try it in 60 seconds (for judges)
+1. Open https://knowitapp.vercel.app in a desktop browser (Chrome, Edge, Firefox or Safari). Click **Click to start**, then **Skip for now** (or make a username to appear on the leaderboard).
+2. **Facts:** allow the camera (or click the picture icon to upload a photo of anything). Watch the AI outline the object, name it, give it a nickname and reveal the facts, then answer the quiz.
+3. **Bulletin Board:** open it to see your sticky note pinned. Scroll to zoom, drag notes around, click one to see its photo and facts, rename it, or share it as a card.
+4. **Hunt:** start a round. Nimbus names an object, you have a countdown to snap it, and the AI judges your photo.
+
+## Screenshots
+| Facts: outline, nickname, facts, quiz | Bulletin Board |
+| --- | --- |
+| ![Facts result](docs/screenshots/02-facts.png) | ![Bulletin Board](docs/screenshots/03-board.png) |
+| **Hunt** | **Settings and accounts** |
+| ![Hunt](docs/screenshots/04-hunt.png) | ![Settings](docs/screenshots/05-settings.png) |
+
+## What it does
+- **Facts.** Snap with your webcam or upload a photo. Gemini finds and outlines the object, names it, and writes 5 to 10 facts that are checked against what you have already seen, so you never get the same fact twice. If it is unsure, it outlines the candidates and you click the right one. A quick A/B/C quiz follows, and a "Not that? Tell Nimbus what it really is" button lets you correct a wrong guess. Photos of people get friendly facts about clothing and surroundings, not about the person.
+- **Bulletin Board.** Every object becomes a handwritten sticky note with an AI-made nickname ("Sir Sips-a-Lot" for a mug). The board is an infinite cork canvas: scroll to zoom, drag to pan, drag notes to rearrange, drag to the trash to unpin (with undo), rename, revert to the AI name, click a note to see its photo and facts, and share it as an image card.
+- **Hunt.** A timed scavenger game. Nimbus names an object, you race to snap it. Rounds get faster (60 s shrinking 8% a round, 15 s floor) and stricter, climbing through Ordinary, Remarkable, Legendary and Mythic tiers. You have three clouds (lives), the clock pauses while the AI checks your photo, and each find earns a bonus fact.
+- **Leaderboard and accounts.** Pick a username and password. Every username is screened by Gemini, passwords are hashed, and Hunt scores are ranked with gold, silver and bronze badges.
+- **Progress.** XP and brain levels with a level-up celebration, daily streaks (click the flame for details), collection badges by category, and a "welcome back" card that remembers your last note.
+- **Nimbus.** The cloud mascot gives AI compliments, guides the tutorial and reacts to what you do. Hand-drawn SVG art throughout, with no emojis.
+- **Cloud sync.** Sign in with Google to keep notes, photos, XP, streak and settings safe and in sync across computers.
+- **Made to be comfortable.** Light and dark themes, high contrast, text size, reduce motion, multiple languages for facts and compliments, kid / normal / nerdy fact styles, and an easier or harder Hunt start.
+- **Polished details.** Looping music per screen with crossfades (only one open tab plays at a time), synthesized sound effects, cloud transitions between screens, offline support for visited screens, and an automatic "new version" banner.
+
+## How it fits the theme
+Everyday objects are the most overlooked things in our lives, and scrolling is the most overlooked use of our time. Know it elevates both. A paperclip becomes a story about invention, a mug becomes a piece of history, and a few idle minutes become something you actually remember.
+
+## For the judging criteria
+| Criterion | Where to look |
+| --- | --- |
+| Creativity and originality | Replacing doomscrolling with a curiosity habit; the nickname-and-sticky-note collection; Hunt as a game built on the same AI |
+| Technical difficulty | Vision AI with bounding boxes drawn over the photo; strict JSON from an LLM with retries and model fallback; a custom pan, zoom and drag board using pointer events; hashed-password accounts with rate limiting; offline-first merge sync with Firestore; Web Audio crossfades with cross-tab ownership |
+| Functionality | Full loop works end to end on the live site: account, Facts, board, Hunt, leaderboard, sync, settings |
+| UI/UX | Consistent hand-drawn style, one-click flows, clear feedback and fallbacks (no camera, blocked camera, offline, AI errors) |
+| Theme relevance | See above |
+| Presentation | Demo video and this page |
+
+## How it is built
+```
+Browser (Next.js App Router, React 19, Tailwind 4, GSAP)
+  ├─ localStorage + IndexedDB ........ notes, photos, XP, settings (works offline)
+  ├─ Firebase Auth + Firestore ....... optional Google sign-in and sync (merge rules in lib/client/sync-merge.ts)
+  └─ /api routes (server only, the key never reaches the browser)
+        ├─ detect, facts, compliment, hunt/challenge, hunt/check ... Gemini via its OpenAI-compatible endpoint
+        └─ leaderboard/* ........... accounts, sessions and scores in Upstash Redis
+```
+- **AI.** `gemini-3.5-flash` writes facts; `gemini-3.5-flash-lite` handles detection, Hunt judging, username moderation and compliments. Responses are validated, retried once if the JSON is unreadable, and Facts falls back to the cheaper model if the main one is unavailable.
+- **Privacy.** Photos stay in your browser unless you sign in to cloud sync. A photo is sent to the AI only to analyze it.
+- **Security.** scrypt password hashing, hashed session tokens (6 per account), lockout after 6 wrong passwords in 10 minutes, rate-limited API routes, Firestore rules that let each user touch only their own data.
+- **Where things are.** `app/` routes and API, `components/` screens, `lib/client/` state, audio, sync and sharing, `lib/server/` Gemini, auth and the score store.
+
+## Run it yourself
 ```bash
 cp .env.example .env.local   # put your Gemini API key in GEMINI_API_KEY
 npm install
 npm run dev                  # http://localhost:3000
 ```
-In a Claude Code cloud session the key is injected by the network proxy: set `GEMINI_API_KEY=proxy-injected` in `.env.local` and run `npm run dev:cloud` (Node's fetch needs `NODE_USE_ENV_PROXY=1` to use the proxy).
+Other scripts: `npm run build`, `npm start`, `npm run lint`. In a Claude Code cloud session the key is injected by the network proxy: set `GEMINI_API_KEY=proxy-injected` and use `npm run dev:cloud`.
 
-Other scripts: `npm run build`, `npm start`, `npm run lint`.
-
-## Environment variables
-| Name | Needed | What for |
+| Variable | Needed | What for |
 | --- | --- | --- |
 | `GEMINI_API_KEY` | yes | All AI features |
-| `KV_REST_API_URL`, `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) | for a shared leaderboard | Accounts and scores. Vercel adds them when you connect Upstash |
+| `KV_REST_API_URL`, `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) | for a shared leaderboard | Accounts and scores (Vercel adds them when you connect Upstash). Without them the leaderboard runs in a temporary in-memory mode |
 | `NEXT_PUBLIC_FIREBASE_*` | optional | Use your own Firebase project for cloud sync |
 
-## Leaderboard setup (Vercel)
-Accounts and the Hunt leaderboard need a small database so every player sees the same scores.
-1. In Vercel, open your project, then **Storage**, then **Create Database**, then **Upstash** (Redis, free plan).
-2. Connect it to this project. Vercel adds `KV_REST_API_URL` and `KV_REST_API_TOKEN` for you.
-3. **Redeploy.** Without this step the leaderboard still runs, but only in a temporary test mode that is not shared or kept.
+**Deploy on Vercel:** import the repo (leave Root Directory empty), add `GEMINI_API_KEY`, connect an Upstash Redis store under Storage, and deploy. Pushes to `main` deploy automatically. The camera needs HTTPS.
 
-Passwords are hashed with scrypt, sign-in sessions are stored as SHA-256 hashes (6 per account), and an account is locked for 10 minutes after 6 wrong passwords. Accounts made before passwords existed can add one in Settings, Account.
+## Challenges along the way
+Getting a language model to return clean, structured data every time took retries, cleanup and a cheaper-model fallback. A first phone version fought with mobile audio and layout, so the final app focuses on a great desktop experience. Smaller fixes included two tabs playing music at once and stale cached builds.
 
-## Cloud sync (Firebase)
-Sign in with Google in Settings, then Cloud sync. Notes (with photos), XP, streak, settings and the leaderboard account are saved to Firestore (`users/{uid}` and `users/{uid}/notes/{id}`). Firebase web config is public by design; the Firestore security rules (each user can only read and write their own `users/{uid}` data) are what protect it. Progress only ever merges forward, so signing in on a second computer never loses anything.
-
-## Deploy (Vercel)
-1. Import the repo (the app is at the repo root, so leave **Root Directory** empty).
-2. Add `GEMINI_API_KEY` with your real key, and connect Upstash (see above).
-3. Deploy and open the HTTPS link on your computer (the webcam needs HTTPS). Pushes to `main` deploy automatically.
-
-## Tech
-Next.js 16, React 19, Tailwind 4, GSAP, Firebase (Auth and Firestore, loaded on demand), Upstash Redis. Gemini (`gemini-3.5-flash` for facts, `gemini-3.5-flash-lite` for detection, Hunt, moderation and compliments) via the OpenAI-compatible endpoint. Photos and notes are stored on the computer (IndexedDB and localStorage) and optionally synced.
+## What is next
+Bring Know it back to phones with proper device testing, share boards with friends, real-time Hunt races, daily challenges and themed collections, and teacher-made scavenger hunts.
 
 ## Credits
-Built with Claude Code · AI by Gemini. Music via Storyblocks (Via Portugal, Joyful Ride, Courage, Fresh Story). Fonts: Shrikhand, Sour Gummy, Caveat (SIL OFL). Sound effects are synthesized in code.
-
-## Judging criteria
-Creativity and Originality · Technical Difficulty · Functionality · UI/UX · Theme Relevance · Presentation and Pitch
+Built with Claude Code · AI by Gemini. Music via Storyblocks (Via Portugal, Joyful Ride, Courage, Fresh Story). Fonts: Shrikhand, Sour Gummy and Caveat (SIL Open Font License). Sound effects are synthesized in code.
