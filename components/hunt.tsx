@@ -308,22 +308,24 @@ export function Hunt() {
             <TimerRing left={left} total={total} urgent={urgent} />
           </div>
         }
+        belowTop={
+          <div className="flex items-center justify-between gap-2">
+            <div className="glass flex shrink-0 gap-1 rounded-full px-2.5 py-1.5">
+              {Array.from({ length: MAX_LIVES }, (_, i) => (
+                <LifeCloud key={`${i}-${i < lives}`} filled={i < lives} size={24} />
+              ))}
+            </div>
+            {phase === "play" && lives > 1 ? (
+              <button onClick={skip} className="glass min-h-[44px] shrink-0 rounded-full px-3 py-2 text-[0.8rem] font-extrabold whitespace-nowrap active:scale-95">
+                Skip (-1)
+              </button>
+            ) : (
+              <span />
+            )}
+            <div className="glass shrink-0 rounded-full px-3 py-1.5 text-[0.95rem] font-extrabold whitespace-nowrap">Found: {found}</div>
+          </div>
+        }
       />
-      {/* lives + score */}
-      <div className="pointer-events-none absolute inset-x-0 z-10 mx-auto flex max-w-2xl items-center justify-between px-5" style={{ top: "calc(env(safe-area-inset-top) + 128px)" }}>
-        <div className="glass flex gap-1.5 rounded-full px-3 py-1.5">
-          {Array.from({ length: MAX_LIVES }, (_, i) => (
-            <LifeCloud key={`${i}-${i < lives}`} filled={i < lives} size={30} />
-          ))}
-        </div>
-        {phase === "play" && lives > 1 && (
-          <button onClick={skip} className="glass pointer-events-auto min-h-[44px] rounded-full px-3.5 py-2 text-[0.8rem] font-extrabold whitespace-nowrap active:scale-95">
-            Skip (-1 cloud)
-          </button>
-        )}
-        <div className="glass rounded-full px-3.5 py-1.5 text-base font-extrabold whitespace-nowrap">Found: {found}</div>
-      </div>
-
       {phase === "loading" && (
         <div className="absolute inset-0 z-20 flex flex-col items-center justify-center gap-4 bg-sky-500/70">
           <CloudLoader size={130} />
@@ -380,14 +382,14 @@ function ChallengeCard({ text, level }: { text: string; level: number }) {
     gsap.fromTo(ref.current, { scale: 0.6, rotation: -6, opacity: 0 }, { scale: 1, rotation: 0, opacity: 1, duration: 0.6, ease: "elastic.out(1, 0.5)" });
   }, [text]);
   return (
-    <div ref={ref} className="card min-w-0 flex-1 px-3.5 py-2.5">
-      <div className="mb-0.5 flex items-center gap-2">
-        <span className="rounded-full px-2 py-[1px] text-[0.68rem] font-extrabold tracking-wider uppercase" style={{ background: tier.bg, color: tier.fg, border: `2px solid ${tier.ring}` }}>
+    <div ref={ref} className="card min-w-0 flex-1 px-3 py-2">
+      <div className="mb-0.5 flex flex-wrap items-center gap-x-2">
+        <span className="rounded-full px-2 py-[1px] text-[0.64rem] font-extrabold tracking-wider whitespace-nowrap uppercase" style={{ background: tier.bg, color: tier.fg, border: `2px solid ${tier.ring}` }}>
           {tier.name}
         </span>
-        <span className="text-[0.7rem] font-extrabold text-[var(--ink-soft)]">Level {level}</span>
+        <span className="text-[0.68rem] font-extrabold whitespace-nowrap text-[var(--ink-soft)]">Level {level}</span>
       </div>
-      <div className="text-[1.08rem] leading-tight font-extrabold">{text}</div>
+      <div className="text-[clamp(0.9rem,3.8vw,1.08rem)] leading-tight font-extrabold">{text}</div>
     </div>
   );
 }
@@ -396,12 +398,12 @@ function TimerRing({ left, total, urgent }: { left: number; total: number; urgen
   const p = Math.max(0, Math.min(1, left / total));
   const color = p > 0.5 ? "#34d399" : p > 0.2 ? "#ffd23f" : "#f43f5e";
   return (
-    <div className={`relative grid h-[68px] w-[68px] shrink-0 place-items-center rounded-full border-[3px] border-[var(--ink)] bg-white ${urgent ? "ring-urgent" : ""}`}>
+    <div className={`relative grid h-[var(--ring)] w-[var(--ring)] shrink-0 place-items-center rounded-full border-[3px] border-[var(--ink)] bg-white ${urgent ? "ring-urgent" : ""}`}>
       <svg className="absolute inset-0 -rotate-90" viewBox="0 0 64 64">
         <circle cx="32" cy="32" r="25" fill="none" stroke="#e2e8f0" strokeWidth="7" />
         <circle cx="32" cy="32" r="25" fill="none" stroke={color} strokeWidth="7" strokeLinecap="round" pathLength={1} strokeDasharray="1" strokeDashoffset={1 - p} />
       </svg>
-      <span className="font-display relative text-xl text-[var(--ink)]">{Math.ceil(left)}</span>
+      <span className="font-display relative text-lg text-[var(--ink)]">{Math.ceil(left)}</span>
     </div>
   );
 }

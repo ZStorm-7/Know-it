@@ -618,3 +618,10 @@ html[data-device="desktop"] .sticky { animation: sway 5.5s ease-in-out infinite;
   html[data-device="phone"] .tutorial-nimbus svg { width: 84px; height: auto; }
   html[data-device="phone"] .btn3d { min-height: 46px; }
 }
+
+/* Hunt HUD sizes: smaller on narrow or short phones so the stacked rows never collide. */
+:root { --ring: 64px; }
+@media (max-width: 400px), (max-height: 560px) {
+  html[data-device="phone"] { --ring: 52px; }
+  html[data-device="phone"] .cam-corner { display: none; }
+}

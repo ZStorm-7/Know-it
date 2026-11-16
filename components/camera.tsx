@@ -16,6 +16,7 @@ export function Camera({
   confirm = true,
   hint = "Show me something ordinary",
   top,
+  belowTop,
   disabled,
 }: {
   onCapture: (dataUrl: string) => void;
@@ -23,6 +24,8 @@ export function Camera({
   confirm?: boolean;
   hint?: string;
   top?: ReactNode;
+  /** A second row under the back button and `top`, full width (used by Hunt for lives and score). */
+  belowTop?: ReactNode;
   disabled?: boolean;
 }) {
   const explained = useStore((s) => s.cameraExplained);
@@ -139,11 +142,14 @@ export function Camera({
       )}
 
       {/* top bar */}
-      <div className="absolute inset-x-0 top-0 z-10 mx-auto flex w-full max-w-2xl items-start gap-3 p-4">
+      <div className="absolute inset-x-0 top-0 z-10 mx-auto w-full max-w-2xl p-4" style={{ paddingTop: "max(16px, env(safe-area-inset-top))" }}>
+       <div className="flex items-start gap-2.5">
         <IconBtn label="Back" onClick={onBack}>
           <ArrowLeft size={22} strokeWidth={3} />
         </IconBtn>
         <div className="min-w-0 flex-1">{top}</div>
+       </div>
+       {belowTop && <div className="mt-2">{belowTop}</div>}
       </div>
 
       {/* hint */}
