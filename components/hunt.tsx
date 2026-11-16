@@ -475,10 +475,10 @@ function Intro({ best, onStart, onBack }: { best: number; onStart: () => void; o
           </ul>
         </div>
         <div data-in className="flex flex-wrap items-center justify-center gap-2">
-          <div className="glass flex items-center gap-2 rounded-full px-4 py-2 font-extrabold">
+          <div className="glass flex items-center gap-2 rounded-full !bg-white/90 px-4 py-2 font-extrabold text-[var(--ink)]">
             <TrophyIcon size={26} /> Best: {best}
           </div>
-          <button className="glass flex items-center gap-2 rounded-full px-4 py-2 font-extrabold active:scale-95" onClick={() => setBoardOpen(true)}>
+          <button className="glass flex items-center gap-2 rounded-full !bg-white/90 px-4 py-2 font-extrabold text-[var(--ink)] active:scale-95" onClick={() => setBoardOpen(true)}>
             <RankBadge rank={1} size={26} /> Leaderboard
           </button>
         </div>
