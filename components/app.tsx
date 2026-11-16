@@ -1,6 +1,6 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
-import { playMusic, preloadMusic, setMusicVolume, Track, unlockAudio } from "@/lib/client/audio";
+import { armEarlyMusic, playMusic, preloadMusic, setMusicVolume, Track, unlockAudio } from "@/lib/client/audio";
 import { initCloud } from "@/lib/client/cloud";
 import { setPrevVisit } from "@/lib/client/nav";
 import { getState, levelInfo, needsUsername, update, useStore } from "@/lib/client/store";
@@ -78,6 +78,11 @@ export default function App() {
     document.addEventListener("focusin", onFocus);
     return () => document.removeEventListener("focusin", onFocus);
   }, [settings.device]);
+
+  // music starts on the first touch (or at once, where the browser allows it), not only on "Tap to start"
+  useEffect(() => {
+    armEarlyMusic();
+  }, []);
 
   // if this phone signed in to the cloud before, reconnect quietly at launch
   useEffect(() => {

@@ -126,12 +126,47 @@ export function unlockAudio() {
     // start the first track right inside the tap, so the phone lets us keep playing later
     wanted = "home";
     const a = musicEl();
+    if (a.src.endsWith("/music/home.mp3") && !a.paused) return; // already playing (it started early): do not restart it
     a.src = "/music/home.mp3";
     setElVolume(a, 0);
     a.play()
       .then(() => fadeTo(a, phoneVolume(), 900))
       .catch(() => {});
   }
+}
+
+let armed = false;
+/**
+ * Start the music as early as the browser allows, before "Tap to start".
+ * Browsers only allow sound after a touch, so this tries right away, and otherwise starts the music
+ * on the very first touch, click or key press anywhere (for example while the opening animation plays).
+ */
+export function armEarlyMusic() {
+  if (armed || typeof window === "undefined") return;
+  armed = true;
+  if (phoneVolume() <= 0) return;
+
+  if (onPhone()) {
+    // some browsers allow it straight away (for example Android Chrome on a site people use often)
+    wanted = "home";
+    const a = musicEl();
+    a.src = "/music/home.mp3";
+    setElVolume(a, 0);
+    a.play()
+      .then(() => fadeTo(a, phoneVolume(), 1200))
+      .catch(() => {});
+  }
+
+  const events = ["pointerup", "touchend", "click", "keydown"] as const;
+  const first = () => {
+    events.forEach((e) => document.removeEventListener(e, first));
+    unlockAudio();
+    if (!onPhone()) {
+      preloadMusic();
+      playMusic("home");
+    }
+  };
+  events.forEach((e) => document.addEventListener(e, first, { passive: true }));
 }
 
 export function setMusicVolume(v: number) {
