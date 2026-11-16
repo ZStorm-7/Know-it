@@ -1,5 +1,5 @@
 import { NextRequest } from "next/server";
-import { checkImage, cleanConf, geminiJSON, languageLine, MODEL_SMART } from "@/lib/server/gemini";
+import { checkImage, cleanConf, GeminiError, geminiJSON, languageLine, MODEL_FAST, MODEL_SMART } from "@/lib/server/gemini";
 
 const CATEGORIES = ["kitchen", "clothing", "nature", "tech", "toys", "stationery", "furniture", "other"];
 import { handle } from "@/lib/server/route-utils";
@@ -50,14 +50,16 @@ Rules:
     const user = `${typed ? `The player told you what this is: "${target}". Trust the player. Use "${target}" as the object name and write facts about it; the photo is only context.\n` : ""}The object to teach about: "${target}".
 Already seen facts (do not repeat): ${avoid.length ? JSON.stringify(avoid) : "none"}.`;
 
-    const out = await geminiJSON<Record<string, unknown>>({
-      model: MODEL_SMART,
-      system,
-      user,
-      imageDataUrl: image,
-      temperature: 1.0,
-      signal: req.signal,
-    });
+    const ask = (model: string) =>
+      geminiJSON<Record<string, unknown>>({ model, system, user, imageDataUrl: image, temperature: 1.0, signal: req.signal });
+    let out: Record<string, unknown>;
+    try {
+      out = await ask(MODEL_SMART);
+    } catch (e) {
+      // If the account is low on credits the bigger model can be refused while the cheaper one still works.
+      if (e instanceof GeminiError && e.status === 402) out = await ask(MODEL_FAST);
+      else throw e;
+    }
 
     const seen = new Set(avoid.map((s) => s.toLowerCase()));
     const facts = (Array.isArray(out.facts) ? out.facts : [])
