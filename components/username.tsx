@@ -62,19 +62,19 @@ export function UsernameScreen() {
 
   return (
     <div ref={root} className="no-scrollbar flex h-full flex-col items-center overflow-y-auto px-5" style={{ paddingTop: "max(16px, 2.5dvh)", paddingBottom: "max(20px, env(safe-area-inset-bottom))" }}>
-      <div data-in>
+      <div data-in className="hide-short">
         <Nimbus size={110} mood="happy" className="bob" />
       </div>
       <h2 data-in className="font-display mt-1 text-center text-[clamp(1.8rem,8vw,2.5rem)] leading-tight" style={{ textShadow: "0 3px 0 #8b5cf6" }}>
         {create ? "Create your account" : "Welcome back"}
       </h2>
-      <p data-in className="mt-1 max-w-sm text-center text-sm font-bold opacity-95">
+      <p data-in className="hide-short mt-1 max-w-sm text-center text-sm font-bold opacity-95">
         {create ? "Your username shows on the Hunt leaderboard. Nimbus checks every name to keep it friendly and one of a kind." : "Sign in to get your leaderboard spot back."}
       </p>
 
       <form
         data-in
-        className="card mt-4 w-full max-w-sm p-4"
+        className="card mt-4 w-full max-w-sm p-4 [@media(max-height:680px)]:mt-2.5"
         onSubmit={(e) => {
           e.preventDefault();
           submit();
@@ -165,15 +165,15 @@ export function UsernameScreen() {
         )}
       </form>
 
-      <div data-in className="mt-4 flex items-center gap-2 text-sm font-bold opacity-95">
+      <div data-in className="hide-short mt-4 flex items-center gap-2 text-sm font-bold opacity-95">
         <RankBadge rank={1} size={28} /> <RankBadge rank={2} size={28} /> <RankBadge rank={3} size={28} />
         <span>Top Hunters get medals</span>
       </div>
 
-      <div data-in className="mt-4 flex w-full max-w-sm flex-col gap-3">
+      <div data-in className="mt-4 flex w-full max-w-sm flex-col gap-3 [@media(max-height:680px)]:mt-2.5 [@media(max-height:680px)]:gap-2">
         <Btn
           variant="white"
-          className="h-[50px] text-lg"
+          className="h-[50px] text-lg [@media(max-height:680px)]:!h-[44px]"
           onClick={() => {
             setMode(create ? "signin" : "create");
             setError(null);
@@ -185,7 +185,7 @@ export function UsernameScreen() {
         </Btn>
         <Btn
           variant="white"
-          className="h-[50px] text-lg"
+          className="h-[50px] text-lg [@media(max-height:680px)]:!h-[44px]"
           onClick={() => {
             chooseGuest();
             go("home");

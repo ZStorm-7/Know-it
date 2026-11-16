@@ -105,7 +105,7 @@ export function Home() {
             onBlur={() => setTip(false)}
             onClick={() => {
               sfx("tap");
-              setTip((t) => !t);
+              setTip(true); // hovering already opens it, so a click must not toggle it shut
               clearTimeout(tipTimer.current);
               tipTimer.current = setTimeout(() => setTip(false), 6000);
             }}
