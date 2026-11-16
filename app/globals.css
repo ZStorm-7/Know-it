@@ -176,6 +176,7 @@ textarea {
 }
 
 /* ---------- Nimbus ---------- */
+.home-nimbus svg, .choose-nimbus svg, .levelup-nimbus svg, .tutorial-nimbus svg { max-width: 100%; height: auto; }
 .nimbus-eyes {
   transform-origin: 60px 45px;
   animation: blink 4.5s infinite;
