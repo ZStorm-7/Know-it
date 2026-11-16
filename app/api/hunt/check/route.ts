@@ -36,6 +36,7 @@ ${languageLine(body.lang)}`,
       }`,
       imageDataUrl: image,
       temperature: 0.2,
+      maxTokens: 900,
       signal: req.signal,
     });
     return {

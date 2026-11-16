@@ -76,6 +76,8 @@ type Opts = {
   user: string;
   imageDataUrl?: string;
   temperature?: number;
+  /** Cap on the answer length. Gemini reserves credit for the maximum, so a sensible cap lets calls through on a low balance. */
+  maxTokens?: number;
   signal?: AbortSignal;
 };
 
@@ -123,6 +125,7 @@ async function callGemini(key: string, model: string, opts: Opts, hasFallback: b
   const body = JSON.stringify({
     model,
     temperature: opts.temperature ?? 0.7,
+    max_tokens: opts.maxTokens ?? 2000,
     response_format: { type: "json_object" },
     messages: [
       { role: "system", content: opts.system },

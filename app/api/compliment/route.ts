@@ -17,6 +17,7 @@ You cannot see the user, so do not mention looks. No emojis.
 ${languageLine(body.lang)}`,
       user: "Give me today's compliment.",
       temperature: 1.2,
+      maxTokens: 300,
     });
     const compliment = String(out.compliment ?? "").trim().slice(0, 160);
     if (!compliment) throw new Error("empty");

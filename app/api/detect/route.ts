@@ -22,6 +22,7 @@ export async function POST(req: NextRequest) {
       user: "Find the objects in this photo.",
       imageDataUrl: image,
       temperature: 0.2,
+      maxTokens: 1500,
       signal: req.signal,
     });
     const objects = (Array.isArray(out.objects) ? out.objects : [])

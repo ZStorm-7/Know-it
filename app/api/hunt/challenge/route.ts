@@ -24,6 +24,7 @@ Return JSON only: {"challenge": string}
 ${languageLine(body.lang)}`,
       user: `Round ${round}. Already used (do not repeat or closely resemble): ${JSON.stringify(used)}`,
       temperature: 1.1,
+      maxTokens: 300,
       signal: req.signal,
     });
     const challenge = String(out.challenge ?? "").trim().slice(0, 80);

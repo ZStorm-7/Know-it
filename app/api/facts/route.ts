@@ -51,7 +51,7 @@ Rules:
 Already seen facts (do not repeat): ${avoid.length ? JSON.stringify(avoid) : "none"}.`;
 
     const ask = (model: string) =>
-      geminiJSON<Record<string, unknown>>({ model, system, user, imageDataUrl: image, temperature: 1.0, signal: req.signal });
+      geminiJSON<Record<string, unknown>>({ model, system, user, imageDataUrl: image, temperature: 1.0, maxTokens: 3500,signal: req.signal });
     // geminiJSON already switches to the other model or the backup key if the first choice fails
     const out = await ask(MODEL_SMART);
 

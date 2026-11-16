@@ -41,6 +41,7 @@ export async function POST(req: NextRequest) {
       system: SYSTEM,
       user: `Proposed username: "${name}"`,
       temperature: 0,
+      maxTokens: 300,
       signal: req.signal,
     });
     if (verdict.appropriate !== true) {
