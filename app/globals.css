@@ -494,6 +494,11 @@ html[data-contrast="true"] .bubble { border-width: 4px; }
    so their gradients and backgrounds are never cut off by the centered column. */
 html[data-device="desktop"] .bleed { position: fixed; }
 
+/* Short browser windows: hide decorations so the important buttons always fit. */
+@media (max-height: 680px) {
+  .hide-short { display: none; }
+}
+
 /* ---------- Micro-animations ---------- */
 /* Main buttons breathe and get an occasional shine. */
 .btn3d { overflow: hidden; }

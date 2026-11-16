@@ -109,7 +109,7 @@ export function Toaster() {
   const view = (list: ToastItem[]) => list.map((t) => <ToastView key={t.id} item={t} onDone={() => setItems((s) => s.filter((x) => x.id !== t.id))} />);
   return (
     <>
-      <div className="pointer-events-none fixed inset-x-0 z-[90] flex flex-col items-center gap-2 px-4" style={{ bottom: "24px" }}>
+      <div className="pointer-events-none fixed inset-x-0 z-[90] flex flex-col items-center gap-2 px-4" style={{ bottom: "96px" }}>
         {view(items)}
       </div>
     </>

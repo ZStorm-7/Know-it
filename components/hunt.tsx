@@ -464,7 +464,7 @@ function Intro({ best, onStart, onBack }: { best: number; onStart: () => void; o
       </div>
       <div className="no-scrollbar flex min-h-0 flex-1 flex-col overflow-y-auto">
        <div className="m-auto flex w-full flex-col items-center gap-4 py-3">
-        <div data-in>
+        <div data-in className="hide-short">
           <Nimbus size={140} mood="wow" className="bob" />
         </div>
         <div data-in className="card w-full max-w-md p-5">

@@ -83,7 +83,7 @@ export function Home() {
     <div ref={root} className="no-scrollbar relative flex h-full flex-col overflow-y-auto px-5" style={{ paddingTop: "max(14px, 2dvh)", paddingBottom: "max(12px, 1.5dvh)" }}>
       {/* top bar */}
       <div data-in className="flex shrink-0 items-center gap-3">
-        <button aria-label="Open your collection" onClick={() => setCollectionOpen(true)} className="glass flex min-w-0 flex-1 items-center gap-2 rounded-2xl px-3 py-2 text-left active:scale-[0.98]">
+        <button aria-label="Open your collection" onClick={() => setCollectionOpen(true)} className="glass flex min-w-0 flex-1 items-center gap-2 rounded-2xl px-3 py-2 text-left [text-shadow:0_1px_3px_rgba(15,23,42,0.5)] active:scale-[0.98]">
           <BrainIcon size={30} />
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline justify-between gap-2 text-sm font-extrabold">
