@@ -63,6 +63,7 @@ Browser (Next.js App Router, React 19, Tailwind 4, GSAP)
         └─ leaderboard/* ........... accounts, sessions and scores in Upstash Redis
 ```
 - **AI.** `gemini-3.5-flash` writes facts; `gemini-3.5-flash-lite` handles detection, Hunt judging, username moderation and compliments. Responses are validated, retried once if the JSON is unreadable, and Facts falls back to the cheaper model if the main one is unavailable.
+- **AI backup plan.** If a request fails because of credits, quota, a busy service or an unavailable model, the server tries the next option automatically: the other model on the same key, then the backup key (`GEMINI_API_KEY_BACKUP`) with both models. Bad requests are not retried. Open `/api/ai-status` to see which keys and models are working right now (it never shows a key).
 - **Privacy.** Photos stay in your browser unless you sign in to cloud sync. A photo is sent to the AI only to analyze it.
 - **Security.** scrypt password hashing, hashed session tokens (6 per account), lockout after 6 wrong passwords in 10 minutes, rate-limited API routes, Firestore rules that let each user touch only their own data.
 - **Where things are.** `app/` routes and API, `components/` screens, `lib/client/` state, audio, sync and sharing, `lib/server/` Gemini, auth and the score store.
@@ -78,6 +79,7 @@ Other scripts: `npm run build`, `npm start`, `npm run lint`. In a Claude Code cl
 | Variable | Needed | What for |
 | --- | --- | --- |
 | `GEMINI_API_KEY` | yes | All AI features |
+| `GEMINI_API_KEY_BACKUP` | optional, recommended | A second Gemini key (ideally from a different Google project). Used automatically if the first runs out of credits or is rate limited |
 | `KV_REST_API_URL`, `KV_REST_API_TOKEN` (or `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`) | for a shared leaderboard | Accounts and scores (Vercel adds them when you connect Upstash). Without them the leaderboard runs in a temporary in-memory mode |
 | `NEXT_PUBLIC_FIREBASE_*` | optional | Use your own Firebase project for cloud sync |
 
