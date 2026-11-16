@@ -141,7 +141,7 @@ export function Home() {
       </div>
 
       {/* Nimbus + compliment: the speech bubble comes out of Nimbus */}
-      <div data-in className="flex min-h-[8.5rem] flex-1 shrink-0 items-center justify-center py-2">
+      <div data-in className="flex min-h-[8.5rem] shrink-0 grow basis-auto items-center justify-center py-2">
         <div className="flex w-full max-w-md items-start gap-3">
           <div className="home-nimbus flex shrink-0 flex-col items-center pt-1" style={{ width: "clamp(88px, 28vw, 150px)" }}>
             <Nimbus size={140} className="bob" />
