@@ -86,6 +86,7 @@ function phonePlay(track: Track) {
     if (!a.src.endsWith(url)) a.src = url;
     a.loop = true;
     setElVolume(a, 0);
+    claimMusic();
     a.play()
       .then(() => fadeTo(a, vol, 700))
       .catch(() => setElVolume(a, vol)); // blocked until the next tap; the tap handler below retries
@@ -94,13 +95,69 @@ function phonePlay(track: Track) {
   else start();
 }
 
+// ---------- only one tab plays music ----------
+// Two open copies of the app (or an old tab left in the background) would play two tracks over each other.
+// Whichever tab starts music last owns it; the others go quiet until you touch them again.
+const TAB_ID = Math.random().toString(36).slice(2);
+const OWNER_KEY = "knowit:music-owner";
+let channel: BroadcastChannel | null = null;
+let yielded = false;
+let lastTrack: Track | null = null;
+
+function claimMusic() {
+  yielded = false;
+  try {
+    channel?.postMessage({ owner: TAB_ID });
+  } catch {}
+  try {
+    localStorage.setItem(OWNER_KEY, `${TAB_ID}:${Date.now()}`);
+  } catch {}
+}
+
+function stopWebMusic() {
+  if (!current || !ctx) return;
+  const old = current;
+  clearTimeout(old.timer);
+  old.gain.gain.cancelScheduledValues(ctx.currentTime);
+  old.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.1);
+  setTimeout(() => old.sources.forEach((s) => { try { s.stop(); } catch {} }), 500);
+  current = null;
+  gen++;
+}
+
+function yieldMusic() {
+  yielded = true;
+  if (el && !el.paused) el.pause();
+  stopWebMusic();
+}
+
+function hookOwnership() {
+  try {
+    channel = new BroadcastChannel("knowit-music");
+    channel.onmessage = (e) => {
+      if (e.data?.owner && e.data.owner !== TAB_ID) yieldMusic();
+    };
+  } catch {}
+  window.addEventListener("storage", (e) => {
+    if (e.key === OWNER_KEY && e.newValue && !e.newValue.startsWith(`${TAB_ID}:`)) yieldMusic();
+  });
+}
+
 let gestureHooked = false;
 function hookGestures() {
   if (gestureHooked) return;
   gestureHooked = true;
+  hookOwnership();
   // after a call, a lock screen or a blocked start, the next tap brings sound back
   const wake = () => {
     if (ctx && ctx.state !== "running") ctx.resume().catch(() => {});
+    if (yielded && phoneVolume() > 0) {
+      // this tab went quiet because another tab started music; the player is using this one again
+      claimMusic();
+      if (onPhone() && el && wanted) el.play().then(() => setElVolume(el!, phoneVolume())).catch(() => {});
+      else if (!onPhone() && lastTrack) playMusic(lastTrack);
+      return;
+    }
     if (onPhone() && el && wanted && el.paused && phoneVolume() > 0) el.play().then(() => setElVolume(el!, phoneVolume())).catch(() => {});
   };
   document.addEventListener("pointerdown", wake, { passive: true });
@@ -108,7 +165,7 @@ function hookGestures() {
   document.addEventListener("visibilitychange", () => {
     if (!onPhone() || !el) return;
     if (document.hidden) el.pause();
-    else if (wanted && phoneVolume() > 0) el.play().catch(() => {});
+    else if (wanted && phoneVolume() > 0 && !yielded) el.play().catch(() => {});
   });
 }
 
@@ -126,9 +183,11 @@ export function unlockAudio() {
     // start the first track right inside the tap, so the phone lets us keep playing later
     wanted = "home";
     const a = musicEl();
+    claimMusic(); // this tab is the one the player is using now
     if (a.src.endsWith("/music/home.mp3") && !a.paused) return; // already playing (it started early): do not restart it
     a.src = "/music/home.mp3";
     setElVolume(a, 0);
+    claimMusic();
     a.play()
       .then(() => fadeTo(a, phoneVolume(), 900))
       .catch(() => {});
@@ -144,6 +203,7 @@ let armed = false;
 export function armEarlyMusic() {
   if (armed || typeof window === "undefined") return;
   armed = true;
+  hookGestures(); // from the start, so a second open tab can hear who is playing
   if (phoneVolume() <= 0) return;
 
   if (onPhone()) {
@@ -153,7 +213,10 @@ export function armEarlyMusic() {
     a.src = "/music/home.mp3";
     setElVolume(a, 0);
     a.play()
-      .then(() => fadeTo(a, phoneVolume(), 1200))
+      .then(() => {
+        claimMusic();
+        fadeTo(a, phoneVolume(), 1200);
+      })
       .catch(() => {});
   }
 
@@ -318,12 +381,15 @@ export function preloadMusic() {
 
 export async function playMusic(track: Track) {
   if (typeof window === "undefined") return;
+  lastTrack = track;
   if (onPhone()) {
     if (wanted === track && el && !el.paused) return;
     phonePlay(track);
     return;
   }
   if (current?.track === track) return;
+  hookGestures();
+  claimMusic();
   const c = ac();
   const myGen = ++gen;
 
