@@ -58,7 +58,7 @@ export function tierOf(level: number) {
 }
 
 type Elevated = { object: string; wow: string; thumb: string };
-type Feedback = { photo: string; match: boolean; object: string; box: Box | null; comment: string; wow?: string; timeout?: boolean };
+type Feedback = { photo: string; match: boolean; object: string; box: Box | null; comment: string; reason?: string; challenge?: string; wow?: string; timeout?: boolean };
 type Phase = "intro" | "loading" | "play" | "checking" | "choosing" | "feedback" | "over";
 
 export function Hunt() {
@@ -183,14 +183,14 @@ export function Hunt() {
         state.current.lives -= 1;
         setLives(state.current.lives);
         sfx("buzz");
-        showFeedback({ photo: "", match: false, object: "", box: null, comment: "Time's up! The clouds blew it away.", timeout: true });
+        showFeedback({ photo: "", match: false, object: "", box: null, comment: "Time's up! The clouds blew it away.", reason: "The timer ran out before you snapped a match.", challenge, timeout: true });
         return;
       }
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
     return () => cancelAnimationFrame(raf);
-  }, [phase]);
+  }, [phase, challenge]);
 
   // Give the player back the time they had when they snapped, minus nothing.
   const resume = () => {
@@ -224,7 +224,8 @@ export function Hunt() {
         setLives(state.current.lives);
         sfx("buzz");
       }
-      showFeedback({ photo, match: r.match, object: r.object, box: r.box, comment: r.comment, wow: r.wow });
+      const why = r.match ? "" : r.reason?.trim() || `I saw ${r.object || "something else"}, which doesn't match the challenge.`;
+      showFeedback({ photo, match: r.match, object: r.object, box: r.box, comment: r.comment, reason: why, challenge, wow: r.wow });
     } catch (e) {
       if ((e as Error)?.name === "AbortError") return;
       // AI or network trouble is not the player's fault: explain, then resume with the same time left
@@ -266,7 +267,7 @@ export function Hunt() {
   // auto-continue after feedback
   useEffect(() => {
     if (phase !== "feedback") return;
-    const t = setTimeout(afterFeedback, feedback?.wow ? 6500 : 2600);
+    const t = setTimeout(afterFeedback, feedback?.wow ? 6500 : feedback?.reason ? 5000 : 2600);
     return () => clearTimeout(t);
   }, [phase, afterFeedback, feedback]);
 
@@ -423,6 +424,13 @@ function FeedbackView({ fb, lives, onContinue }: { fb: Feedback; lives: number; 
           <Nimbus size={160} mood="sad" className="bob" />
         )}
         <p className="text-center text-lg font-bold">{fb.comment}</p>
+        {!fb.match && fb.reason && (
+          <div className="card w-full p-3.5 text-left">
+            <div className="mb-1 text-[0.72rem] font-extrabold tracking-wider text-[var(--violet)] uppercase">Why it did not count</div>
+            <p className="text-[1.02rem] font-bold leading-snug">{fb.reason}</p>
+            {fb.challenge && <p className="mt-1.5 text-sm font-bold opacity-70">The challenge: {fb.challenge}</p>}
+          </div>
+        )}
         {fb.match && fb.wow && (
           <div className="card w-full p-3.5 text-left">
             <div className="mb-1 flex items-center gap-1.5 text-[0.72rem] font-extrabold tracking-wider text-[var(--violet)] uppercase">
@@ -593,6 +601,7 @@ function Over({ score, best, newBest, last, elevated, onAgain, onHome, onJoin }:
         <div data-in className="w-full max-w-sm">
           <p className="mb-2 text-center text-sm font-bold opacity-90">What Nimbus saw last:</p>
           <PhotoBox src={last.photo} maxHeight="30dvh" outlines={last.box ? [{ box: last.box, label: last.object, color: "#fdba74" }] : []} />
+          {last.reason && <p className="mt-2 text-center text-sm font-bold">{last.reason}</p>}
         </div>
       )}
       <div className="flex-1" />
