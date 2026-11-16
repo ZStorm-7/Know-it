@@ -5,7 +5,6 @@ import { initCloud } from "@/lib/client/cloud";
 import { setPrevVisit } from "@/lib/client/nav";
 import { getState, levelInfo, needsUsername, update, useStore } from "@/lib/client/store";
 import { Board } from "./board";
-import { DeviceScreen } from "./device";
 import { Facts } from "./facts";
 import { Home } from "./home";
 import { Hunt } from "./hunt";
@@ -18,9 +17,9 @@ import { Toaster } from "./ui";
 import { LevelUpOverlay } from "./levelup";
 import { UpdateBanner } from "./update-banner";
 
-export type Screen = "splash" | "device" | "username" | "home" | "facts" | "hunt" | "board";
+export type Screen = "splash" | "username" | "home" | "facts" | "hunt" | "board";
 
-const TRACK: Record<Screen, Track | null> = { splash: null, device: "home", username: "home", home: "home", facts: "facts", hunt: "hunt", board: "board" };
+const TRACK: Record<Screen, Track | null> = { splash: null, username: "home", home: "home", facts: "facts", hunt: "hunt", board: "board" };
 
 type Nav = { go: (s: Screen) => void; openSettings: () => void; screen: Screen };
 const NavCtx = createContext<Nav>({ go: () => {}, openSettings: () => {}, screen: "splash" });
@@ -46,10 +45,9 @@ export default function App() {
     root.dataset.text = settings.textSize;
     root.dataset.reduceMotion = String(settings.reduceMotion);
     root.dataset.contrast = String(settings.contrast);
-    root.dataset.device = settings.device || "phone";
     mq.addEventListener("change", apply);
     return () => mq.removeEventListener("change", apply);
-  }, [settings.theme, settings.textSize, settings.reduceMotion, settings.contrast, settings.device]);
+  }, [settings.theme, settings.textSize, settings.reduceMotion, settings.contrast]);
 
   const online = useSyncExternalStore(
     (cb) => {
@@ -66,25 +64,12 @@ export default function App() {
 
   useEffect(() => setMusicVolume(settings.music), [settings.music]);
 
-  // phones: when the keyboard opens, scroll the field into view so it is never hidden behind it
-  useEffect(() => {
-    if (settings.device === "desktop") return;
-    const onFocus = (e: FocusEvent) => {
-      const t = e.target;
-      if (t instanceof HTMLInputElement || t instanceof HTMLTextAreaElement || t instanceof HTMLSelectElement) {
-        setTimeout(() => t.scrollIntoView({ block: "center", behavior: "smooth" }), 320);
-      }
-    };
-    document.addEventListener("focusin", onFocus);
-    return () => document.removeEventListener("focusin", onFocus);
-  }, [settings.device]);
-
-  // music starts on the first touch (or at once, where the browser allows it), not only on "Tap to start"
+  // music starts on the first touch (or at once, where the browser allows it), not only on "Click to start"
   useEffect(() => {
     armEarlyMusic();
   }, []);
 
-  // if this phone signed in to the cloud before, reconnect quietly at launch
+  // if this computer signed in to the cloud before, reconnect quietly at launch
   useEffect(() => {
     void initCloud();
   }, []);
@@ -123,7 +108,7 @@ export default function App() {
     // remember when we were last here (for the welcome-back card), then stamp this visit
     setPrevVisit(getState().lastVisit);
     update((s) => ({ ...s, lastVisit: Date.now() }));
-    go(!getState().settings.device ? "device" : needsUsername() ? "username" : "home");
+    go(needsUsername() ? "username" : "home");
   };
 
   return (
@@ -131,9 +116,8 @@ export default function App() {
       <div className="app-root">
         <Sky clouds={screen !== "board"} />
         {/* on a computer the app is a centered column; no transform, so fixed sheets still cover the screen */}
-        <div className={`absolute inset-y-0 inset-x-0 mx-auto w-full ${settings.device === "desktop" ? "max-w-[900px]" : ""}`} style={{ padding: "inherit" }}>
+        <div className={`absolute inset-y-0 inset-x-0 mx-auto w-full max-w-[900px]`} style={{ padding: "inherit" }}>
           {screen === "splash" && <Splash onStart={start} />}
-          {screen === "device" && <DeviceScreen />}
           {screen === "username" && <UsernameScreen />}
           {screen === "home" && <Home />}
           {screen === "facts" && <Facts />}

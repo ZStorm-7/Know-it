@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
     Object.assign(user, await hashPassword(newPassword));
     delete user.token; // retire the old plain token
     user.sessions = [];
-    const fresh = addSession(user); // only this phone stays signed in
+    const fresh = addSession(user); // only this computer stays signed in
     await putUser(key, user);
     return { token: fresh, hasPassword: true };
   });

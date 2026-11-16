@@ -2,7 +2,7 @@
 import gsap from "gsap";
 import { Check, Home as HomeIcon, Maximize, Minus, Pencil, Plus, Share2, Trash2, Undo2 } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { haptic, sfx } from "@/lib/client/audio";
+import { sfx } from "@/lib/client/audio";
 import { clearPendingNote, peekPendingNote } from "@/lib/client/nav";
 import { shareNote } from "@/lib/client/share";
 import {
@@ -115,7 +115,6 @@ export function Board() {
       tl.fromTo(pin, { y: -60, opacity: 0 }, { y: 0, opacity: 1, duration: 0.35, ease: "bounce.out" }, i * 0.35 + 0.35);
       tl.call(() => {
         sfx("thunk");
-        haptic(20);
       }, [], i * 0.35 + 0.45);
     });
     tl.call(() => fresh.forEach((n) => patchNote(n.id, { fresh: false })));
@@ -196,7 +195,6 @@ export function Board() {
         s.mode = "drag";
         setDragging(true);
         sfx("lift");
-        haptic(25);
         noteEl.style.zIndex = "50";
         gsap.to(noteEl, { scale: 1.12, rotation: n.rot + 6, filter: "drop-shadow(0 18px 18px rgba(0,0,0,0.35))", duration: 0.25, ease: "back.out(2)" });
       }, LONG_PRESS);
@@ -238,7 +236,7 @@ export function Board() {
       if (over !== s.overTrash) {
         s.overTrash = over;
         if (trash.current) gsap.to(trash.current, { scale: over ? 1.25 : 1, duration: 0.2, ease: "back.out(2)" });
-        if (over) haptic(10);
+        
       }
     }
   };
@@ -274,14 +272,13 @@ export function Board() {
         el.style.zIndex = "";
         gsap.to(el, { scale: 1, rotation: n.rot, filter: "none", duration: 0.45, ease: "elastic.out(1,0.5)" });
         sfx("thunk");
-        haptic(18);
         patchNote(id, { x: nx, y: ny });
       }
       s.overTrash = false;
       if (trash.current) gsap.to(trash.current, { scale: 1, duration: 0.2 });
       s.mode = "none";
     } else if (s.mode === "pan" && s.pointers.size === 0) {
-      // double-tap on empty cork toggles zoom
+      // double-click on empty cork toggles zoom
       const moved = Math.hypot(p.x - s.start.x, p.y - s.start.y);
       if (moved < 6) {
         const now = e.timeStamp;
@@ -397,7 +394,7 @@ export function Board() {
       {!hintDone && notes.length > 0 && (
         <div className="absolute inset-x-4 z-30 mx-auto max-w-sm" style={{ top: "calc(env(safe-area-inset-top) + 84px)" }}>
           <div className="card flex items-center gap-3 p-3.5">
-            <p className="flex-1 text-sm font-bold leading-snug">Tap a note to open it. Hold and drag to move it. Pinch to zoom.</p>
+            <p className="flex-1 text-sm font-bold leading-snug">Click a note to open it. Drag to move it. Scroll to zoom.</p>
             <button
               className="rounded-xl bg-[var(--sun)] px-3 py-2 font-extrabold text-[var(--ink)]"
               onClick={() => update((s) => ({ ...s, boardHintDone: true }))}

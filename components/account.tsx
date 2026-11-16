@@ -79,7 +79,7 @@ export function AccountSection({ onClose }: { onClose: () => void }) {
       const r = await api.changePassword(profile.name, profile.token, oldPw, newPw);
       setProfile({ name: profile.name, token: r.token, hasPassword: true });
       sfx("chime");
-      toast(hasPassword ? "Password changed. Other phones were signed out." : "Password added. Your account is protected.");
+      toast(hasPassword ? "Password changed. Other devices were signed out." : "Password added. Your account is protected.");
       reset();
     } catch (e) {
       sfx("buzz");
@@ -136,7 +136,7 @@ export function AccountSection({ onClose }: { onClose: () => void }) {
                 api.logout(profile.name, profile.token);
                 signOut();
                 sfx("whoosh");
-                toast("Signed out. Your notes stay on this phone.");
+                toast("Signed out. Your notes stay on this computer.");
               }}
             >
               Sign out
@@ -180,7 +180,7 @@ export function AccountSection({ onClose }: { onClose: () => void }) {
 
       {panel === "delete" && (
         <div className="mt-2">
-          <p className="text-sm font-bold">This removes {profile.name} and its leaderboard score for good, and frees the name. Your notes stay on this phone.</p>
+          <p className="text-sm font-bold">This removes {profile.name} and its leaderboard score for good, and frees the name. Your notes stay on this computer.</p>
           {hasPassword && <PasswordField label="Enter your password to confirm" value={delPw} onChange={setDelPw} onEnter={removeAccount} autoComplete="current-password" placeholder="Your password" />}
           {error && (
             <p role="alert" className="mt-2 rounded-xl border-2 border-[var(--ink)] bg-orange-100 px-3 py-2 text-sm font-bold text-[var(--ink)]">
@@ -210,7 +210,7 @@ function ago(t?: number) {
   return m < 60 ? `${m} ${m === 1 ? "minute" : "minutes"} ago` : `${Math.round(m / 60)} hours ago`;
 }
 
-/** Google sign-in and cloud sync: notes, XP, streak and settings follow you to any phone. */
+/** Google sign-in and cloud sync: notes, XP, streak and settings follow you to any computer. */
 export function CloudSection() {
   const c = useCloud();
   const signedIn = c.status === "syncing" || c.status === "synced" || (c.status === "error" && !!c.email);
@@ -220,7 +220,7 @@ export function CloudSection() {
       {!signedIn ? (
         <>
           <p className="mt-1 text-sm text-[var(--ink-soft)]">
-            Sign in with Google to keep your notes, photos, XP and streak safe, and bring them to any phone.
+            Sign in with Google to keep your notes, photos, XP and streak safe, and bring them to any computer.
           </p>
           <div className="mt-3">
             <Btn variant="sun" className="h-[50px]" disabled={c.status === "syncing"} onClick={() => signInWithGoogle()}>
@@ -245,7 +245,7 @@ export function CloudSection() {
               className="h-[50px]"
               onClick={() => {
                 signOutCloud();
-                toast("Signed out of cloud sync. Your data stays on this phone.");
+                toast("Signed out of cloud sync. Your data stays on this computer.");
               }}
             >
               Sign out

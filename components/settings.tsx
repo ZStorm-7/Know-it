@@ -3,7 +3,6 @@ import { ReactNode, useRef, useState } from "react";
 import { LANGUAGES } from "@/lib/client/languages";
 import { sfx } from "@/lib/client/audio";
 import { exportBackup, importBackup, resetProgress, setSetting, Settings, update, useStore } from "@/lib/client/store";
-import { isIOS } from "@/lib/client/audio";
 import { AccountSection, CloudSection } from "./account";
 import { Btn, Sheet, toast } from "./ui";
 
@@ -94,7 +93,7 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
           <Row label="Theme">
             <Seg value={s.theme} options={[["light", "Light"], ["dark", "Dark"], ["system", "Auto"]]} onChange={set("theme")} />
           </Row>
-          <Row label="Music volume" sub={isIOS() ? "On iPhone, use the volume buttons" : undefined}>
+          <Row label="Music volume">
             <input
               type="range"
               min={0}
@@ -109,17 +108,11 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
           <Row label="Sound effects">
             <Toggle on={s.sfx} onChange={set("sfx")} label="Sound effects" />
           </Row>
-          <Row label="Vibration" sub="Android phones only">
-            <Toggle on={s.haptics} onChange={set("haptics")} label="Vibration" />
-          </Row>
           <Row label="Reduce motion" sub="Simpler transitions">
             <Toggle on={s.reduceMotion} onChange={set("reduceMotion")} label="Reduce motion" />
           </Row>
           <Row label="Text size">
             <Seg value={s.textSize} options={[["s", "S"], ["m", "M"], ["l", "L"]]} onChange={set("textSize")} />
-          </Row>
-          <Row label="Device" sub="Reshapes the buttons">
-            <Seg value={s.device || "phone"} options={[["phone", "Phone"], ["desktop", "Computer"]]} onChange={set("device")} />
           </Row>
           <Row label="Language" sub="For facts, Hunt and compliments">
             <select
@@ -175,7 +168,7 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
                 toast("Progress reset. Fresh start!");
               }}
             >
-              Tap again to erase notes, XP and high score
+              Click again to erase notes, XP and high score
             </Btn>
           )}
         </div>
@@ -184,11 +177,11 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
           <div className="mb-1 font-extrabold text-[var(--card-ink)]">Credits</div>
           Know it · Built with Claude Code · AI by Gemini (facts can be wrong).
           <br />
-          Music via Storyblocks (Via Portugal, Joyful Ride, Comedy Background Detective, Fresh Story).
+          Music via Storyblocks (Via Portugal, Joyful Ride, Courage, Fresh Story).
           <br />
           Fonts: Shrikhand, Sour Gummy and Caveat (SIL Open Font License).
           <br />
-          Photos are sent to the AI only to analyze them. Your board stays on this phone.
+          Photos are sent to the AI only to analyze them. Your board stays on this computer.
         </div>
       </div>
     </Sheet>

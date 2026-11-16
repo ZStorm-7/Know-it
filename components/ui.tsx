@@ -1,8 +1,7 @@
 "use client";
 import gsap from "gsap";
 import { ReactNode, useEffect, useRef, useState } from "react";
-import { haptic, sfx } from "@/lib/client/audio";
-import { useStore } from "@/lib/client/store";
+import { sfx } from "@/lib/client/audio";
 
 // ---------- Squishy button ----------
 export function Btn({
@@ -27,7 +26,6 @@ export function Btn({
       disabled={disabled}
       onClick={(e) => {
         sfx("tap");
-        haptic(10);
         const el = e.currentTarget;
         gsap.fromTo(el, { scale: 0.94 }, { scale: 1, duration: 0.5, ease: "elastic.out(1.2,0.4)" });
         onClick?.();
@@ -45,7 +43,6 @@ export function IconBtn({ children, onClick, label, className = "" }: { children
       className={`icon-btn ${className}`}
       onClick={() => {
         sfx("tap");
-        haptic(8);
         onClick?.();
       }}
     >
@@ -109,21 +106,11 @@ export function Toaster() {
       pushToast = null;
     };
   }, []);
-  const phone = useStore((s) => s.settings.device) !== "desktop";
-  // On a phone the bottom of the screen is full of buttons, so plain messages appear at the top.
-  // Messages with an action (like Undo) stay at the bottom where a thumb can reach them.
-  const top = phone ? items.filter((t) => !t.action) : [];
-  const bottom = phone ? items.filter((t) => t.action) : items;
   const view = (list: ToastItem[]) => list.map((t) => <ToastView key={t.id} item={t} onDone={() => setItems((s) => s.filter((x) => x.id !== t.id))} />);
   return (
     <>
-      {top.length > 0 && (
-        <div className="pointer-events-none fixed inset-x-0 z-[90] flex flex-col items-center gap-2 px-4" style={{ top: "calc(env(safe-area-inset-top) + 10px)" }}>
-          {view(top)}
-        </div>
-      )}
-      <div className="pointer-events-none fixed inset-x-0 z-[90] flex flex-col items-center gap-2 px-4" style={{ bottom: "calc(env(safe-area-inset-bottom) + 24px)" }}>
-        {view(bottom)}
+      <div className="pointer-events-none fixed inset-x-0 z-[90] flex flex-col items-center gap-2 px-4" style={{ bottom: "24px" }}>
+        {view(items)}
       </div>
     </>
   );

@@ -36,17 +36,16 @@ export function Nimbus({
       {/* soft ground shadow */}
       <ellipse cx="60" cy="76.5" rx="34" ry="2.8" fill="rgba(30,41,99,0.2)" />
 
-      {/* body */}
-      <path d={CLOUD_PATH} fill={`url(#nb${id})`} stroke={ink} strokeWidth="2.6" strokeLinejoin="round" />
+      {/* body: fill, soft shading and highlights first, then the outline on top so nothing spills over it */}
+      <path d={CLOUD_PATH} fill={`url(#nb${id})`} />
       <g clipPath={`url(#cp${id})`}>
-        {/* gentle shading along the bottom and the right side */}
-        <path d="M0 62 Q60 88 120 58 V90 H0 Z" fill="rgba(110,160,230,0.28)" />
-        <path d="M100 20 Q124 36 112 66 L120 80 V10 Z" fill="rgba(110,160,230,0.12)" />
+        <path d="M0 63 Q60 86 120 59 V90 H0 Z" fill="rgba(110,160,230,0.26)" />
+        <path d="M104 24 Q122 38 112 68 L120 80 V12 Z" fill="rgba(110,160,230,0.12)" />
       </g>
-      {/* glossy highlights on the puffs */}
-      <path d="M17 47 C19 42.5 23 40.2 27.5 40.8" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.95" />
-      <path d="M40 24 C43.5 19.5 49 18 54 19.6" fill="none" stroke="#fff" strokeWidth="3" strokeLinecap="round" opacity="0.95" />
-      <path d="M72 17 C76 14 81 13.8 85 15.6" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" opacity="0.85" />
+      <path d="M19 49.5 C20.5 45.5 24 43.5 28 43.8" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" opacity="0.95" />
+      <path d="M41 29 C44 25.5 48.5 24 53 25.2" fill="none" stroke="#fff" strokeWidth="2.6" strokeLinecap="round" opacity="0.95" />
+      <path d="M71 23 C74 20.5 78.5 20 82 21.4" fill="none" stroke="#fff" strokeWidth="2.4" strokeLinecap="round" opacity="0.85" />
+      <path d={CLOUD_PATH} fill="none" stroke={ink} strokeWidth="2.6" strokeLinejoin="round" />
 
       {/* eyebrows */}
       <g fill="none" stroke={ink} strokeWidth="2.2" strokeLinecap="round">

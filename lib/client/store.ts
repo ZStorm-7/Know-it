@@ -8,15 +8,12 @@ export type Settings = {
   theme: "system" | "light" | "dark";
   music: number; // 0..1
   sfx: boolean;
-  haptics: boolean;
   reduceMotion: boolean;
   textSize: "s" | "m" | "l";
   factStyle: "kid" | "normal" | "nerdy";
   huntStart: "easy" | "normal";
   language: string;
   contrast: boolean;
-  /** "" until the player picks Phone or Computer on first launch. */
-  device: "" | "phone" | "desktop";
 };
 
 export type Note = {
@@ -54,7 +51,7 @@ export type State = {
   notes: Note[];
   seenFacts: Record<string, string[]>;
   streak: { count: number; best: number; last: string };
-  /** Leaderboard account. token is this phone's sign-in session. hasPassword is false for accounts made before passwords. */
+  /** Leaderboard account. token is this computer's sign-in session. hasPassword is false for accounts made before passwords. */
   profile: { name: string; token: string; hasPassword?: boolean } | null;
   /** True if the player chose to skip the username step. */
   guest: boolean;
@@ -70,14 +67,12 @@ export const DEFAULT_SETTINGS: Settings = {
   theme: "light",
   music: 0.35,
   sfx: true,
-  haptics: true,
   reduceMotion: false,
   textSize: "m",
   factStyle: "normal",
   huntStart: "easy",
   language: "English",
   contrast: false,
-  device: "",
 };
 
 const DEFAULT: State = {
@@ -250,7 +245,7 @@ export function purgeNoteDetail(id: string) {
 }
 
 // ---------- Streaks ----------
-// A streak counts days in a row with at least one Facts snap or Hunt find, by the phone's local date.
+// A streak counts days in a row with at least one Facts snap or Hunt find, by the computer's local date.
 function dayKey(d: Date) {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
@@ -275,7 +270,7 @@ export function liveStreak(st: State["streak"]): number {
   return st.last === dayKey(new Date()) || st.last === dayKey(y) ? st.count : 0;
 }
 
-// ---------- Room leaderboard (on this device, pass the phone) ----------
+// ---------- Room leaderboard (on this device) ----------
 export function addLeader(name: string, score: number) {
   const entry = { name: name.trim().slice(0, 16) || "Player", score, at: Date.now() };
   update((s) => ({
@@ -319,7 +314,7 @@ export function needsUsername(): boolean {
   return !s.profile && !s.guest;
 }
 
-/** Signs out of the leaderboard account. Notes, XP and settings stay on this phone. */
+/** Signs out of the leaderboard account. Notes, XP and settings stay on this computer. */
 export function signOut() {
   update((s) => ({ ...s, profile: null, guest: true, lastRank: null }));
 }

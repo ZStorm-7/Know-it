@@ -1,7 +1,7 @@
 "use client";
 import gsap from "gsap";
 import { useEffect, useRef } from "react";
-import { haptic, sfx } from "@/lib/client/audio";
+import { sfx } from "@/lib/client/audio";
 import { Nimbus, Sparkle } from "./art";
 import { confetti } from "./ui";
 
@@ -12,7 +12,6 @@ export function LevelUpOverlay({ level, name, onDone }: { level: number; name: s
   useEffect(() => {
     const el = root.current!;
     sfx("levelup");
-    haptic([30, 50, 30, 50, 80]);
     const tl = gsap.timeline({ onComplete: onDone });
     tl.fromTo(el.querySelector("[data-bg]"), { opacity: 0 }, { opacity: 1, duration: 0.3 })
       .fromTo(el.querySelector("[data-rays]"), { scale: 0.2, opacity: 0, rotation: -40 }, { scale: 1, opacity: 1, rotation: 0, duration: 0.9, ease: "back.out(1.4)" }, 0.05)
@@ -70,7 +69,7 @@ export function LevelUpOverlay({ level, name, onDone }: { level: number; name: s
         You are now a {name}
       </p>
       <p data-text className="mt-3 text-sm font-bold text-white/85">
-        Tap to continue
+        Click to continue
       </p>
     </div>
   );

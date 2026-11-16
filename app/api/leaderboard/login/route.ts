@@ -19,7 +19,7 @@ export async function POST(req: NextRequest) {
       throw new GeminiError("auth", 401, WRONG);
     }
     if (!user.hash) {
-      throw new GeminiError("legacy", 409, "This account was made before passwords. Open Know it on the phone where you made it, then go to Settings, Account and add a password.");
+      throw new GeminiError("legacy", 409, "This account was made before passwords. Open Know it on the computer where you made it, then go to Settings, Account and add a password.");
     }
     if (!(await checkPassword(password, user))) {
       noteFail(key);

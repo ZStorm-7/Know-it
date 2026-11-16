@@ -24,22 +24,17 @@ const caveat = localFont({
 export const metadata: Metadata = {
   title: "Know it",
   description: "Learn something extraordinary about the ordinary. Swap scrolling for snapping: point your camera at any object and discover its story.",
-  appleWebApp: { capable: true, title: "Know it", statusBarStyle: "black-translucent" },
-  icons: { apple: "/icons/apple-touch-icon.png" },
 };
 
 export const viewport: Viewport = {
   themeColor: "#38bdf8",
   width: "device-width",
   initialScale: 1,
-  maximumScale: 1,
-  userScalable: false,
-  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${shrikhand.variable} ${sourGummy.variable} ${caveat.variable}`}>
+    <html lang="en" data-device="desktop" className={`${shrikhand.variable} ${sourGummy.variable} ${caveat.variable}`}>
       <body>
         {children}
         <RegisterSW />

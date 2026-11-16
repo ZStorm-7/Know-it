@@ -3,7 +3,7 @@ import { sha } from "@/lib/server/auth";
 import { getUser, nameKey, putUser } from "@/lib/server/board-store";
 import { handle } from "@/lib/server/route-utils";
 
-// Signs this phone out on the server too, so its token stops working.
+// Signs this computer out on the server too, so its token stops working.
 export async function POST(req: NextRequest) {
   return handle(req, async (body) => {
     const key = nameKey(String(body.name ?? ""));

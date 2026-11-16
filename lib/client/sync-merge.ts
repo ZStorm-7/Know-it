@@ -38,7 +38,7 @@ function mergeSeen(a: Record<string, string[]>, b: Record<string, string[]>) {
   return capSeen(out);
 }
 
-/** Combine this phone's progress with the cloud copy. Progress only ever goes forward. */
+/** Combine this computer's progress with the cloud copy. Progress only ever goes forward. */
 export function mergeMain(local: SyncMain, remote: SyncMain): SyncMain {
   const streak: SyncStreak =
     local.streak.last === remote.streak.last
@@ -47,9 +47,8 @@ export function mergeMain(local: SyncMain, remote: SyncMain): SyncMain {
           ...(local.streak.last > remote.streak.last ? local.streak : remote.streak),
           best: Math.max(local.streak.best, remote.streak.best),
         };
-  // keep this phone's device layout (phone or computer); take everything else from the cloud
+  // settings come from the cloud, local values fill any gaps
   const settings: Partial<Settings> = { ...local.settings, ...remote.settings };
-  settings.device = local.settings.device;
   return {
     v: 1,
     xp: Math.max(local.xp, remote.xp),
@@ -58,7 +57,7 @@ export function mergeMain(local: SyncMain, remote: SyncMain): SyncMain {
     settings,
     tutorialDone: local.tutorialDone || remote.tutorialDone,
     boardHintDone: local.boardHintDone || remote.boardHintDone,
-    profile: local.profile ?? remote.profile, // this phone's account wins; otherwise adopt the cloud one
+    profile: local.profile ?? remote.profile, // this computer's account wins; otherwise adopt the cloud one
     seenFacts: mergeSeen(local.seenFacts, remote.seenFacts),
     deleted: [...new Set([...local.deleted, ...remote.deleted])].slice(-300),
     updatedAt: Date.now(),
@@ -66,9 +65,9 @@ export function mergeMain(local: SyncMain, remote: SyncMain): SyncMain {
 }
 
 export type NoteMerge = {
-  /** The notes this phone should end up with. */
+  /** The notes this computer should end up with. */
   notes: Note[];
-  /** Ids whose newest version is on this phone and must be uploaded. */
+  /** Ids whose newest version is on this computer and must be uploaded. */
   upload: string[];
   /** Ids whose newest version is in the cloud and must be downloaded. */
   download: string[];

@@ -7,7 +7,6 @@ export default function manifest(): MetadataRoute.Manifest {
     description: "Learn something extraordinary about the ordinary. A better use of the minutes you would spend scrolling.",
     start_url: "/",
     display: "standalone",
-    orientation: "portrait",
     background_color: "#38bdf8",
     theme_color: "#38bdf8",
     icons: [

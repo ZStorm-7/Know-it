@@ -6,7 +6,7 @@ import { api, Detected } from "@/lib/client/api";
 import { pickChallenge } from "@/lib/client/challenges";
 import { CHECK_LINES, shuffle } from "@/lib/client/random";
 import { shrinkDataUrl } from "@/lib/client/image";
-import { haptic, sfx } from "@/lib/client/audio";
+import { sfx } from "@/lib/client/audio";
 import { addXp, Box, getState, recordActivity, setProfile, update, useStore } from "@/lib/client/store";
 import { useNav } from "./app";
 import { CloudLoader, LifeCloud, Nimbus, RankBadge, Sparkle, TrophyIcon } from "./art";
@@ -177,14 +177,12 @@ export function Hunt() {
         lastTick.current = whole;
         if (whole <= 5 && whole > 0) {
           sfx("tick");
-          haptic(5);
         }
       }
       if (ms <= 0) {
         state.current.lives -= 1;
         setLives(state.current.lives);
         sfx("buzz");
-        haptic([40, 40, 40]);
         showFeedback({ photo: "", match: false, object: "", box: null, comment: "Time's up! The clouds blew it away.", timeout: true });
         return;
       }
@@ -220,13 +218,11 @@ export function Hunt() {
             .then((thumb) => setElevated((list) => [...list, { object: r.object, wow: r.wow, thumb }]));
         }
         sfx("chime");
-        haptic([20, 40, 20]);
         confetti(0.35, 50);
       } else {
         state.current.lives -= 1;
         setLives(state.current.lives);
         sfx("buzz");
-        haptic(80);
       }
       showFeedback({ photo, match: r.match, object: r.object, box: r.box, comment: r.comment, wow: r.wow });
     } catch (e) {
@@ -280,7 +276,6 @@ export function Hunt() {
     state.current.lives -= 1;
     setLives(state.current.lives);
     sfx("buzz");
-    haptic(40);
     toast("Skipped. One cloud floated away.");
     startRound(state.current.found + 1 + offset, prefetch.current.same);
   };
@@ -437,7 +432,7 @@ function FeedbackView({ fb, lives, onContinue }: { fb: Feedback; lives: number; 
           </div>
         )}
         {!fb.match && <p className="text-sm font-bold opacity-90">{lives > 0 ? `${lives} ${lives === 1 ? "cloud" : "clouds"} left` : "No clouds left!"}</p>}
-        <p className="text-xs font-bold opacity-80">Tap to continue</p>
+        <p className="text-xs font-bold opacity-80">Click to continue</p>
       </div>
     </button>
   );
@@ -467,7 +462,7 @@ function Intro({ best, onStart, onBack }: { best: number; onStart: () => void; o
         <div data-in className="card w-full max-w-md p-5">
           <ul className="flex flex-col gap-3 text-[1.02rem] font-bold">
             <li>Nimbus names an ordinary thing to find.</li>
-            <li>Snap it before the timer runs out. If you show a few things, tap the one you mean.</li>
+            <li>Snap it before the timer runs out. If you show a few things, click the one you mean.</li>
             <li>Each find is elevated with a wow fact. Climb from Ordinary to Remarkable to Legendary, and if you dare, Mythic. It gets faster and stricter every level.</li>
             <li>
               <div>You have 3 clouds. Miss, and one floats away.</div>

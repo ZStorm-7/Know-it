@@ -477,17 +477,6 @@ html[data-reduce-motion="true"] *::after {
   50% { translate: 0 -5px; }
 }
 
-/* Device picker illustrations */
-.dv-bob { animation: dv-bob 2.4s ease-in-out infinite; }
-@keyframes dv-bob { 0%, 100% { translate: 0 0; } 50% { translate: 0 -4px; } }
-.dv-tap { animation: dv-tap 2s ease-in-out infinite; transform-origin: 60px 96px; transform-box: view-box; }
-@keyframes dv-tap { 0%, 60%, 100% { transform: translateY(8px) scale(1); opacity: 0; } 15% { transform: translateY(0) scale(1); opacity: 1; } 30% { transform: translateY(-2px) scale(0.85); opacity: 1; } 45% { transform: translateY(0) scale(1); opacity: 1; } }
-.dv-ripple { animation: dv-ripple 2s ease-out infinite; transform-origin: 60px 91px; transform-box: view-box; opacity: 0; }
-@keyframes dv-ripple { 0%, 28% { transform: scale(0.4); opacity: 0; } 30% { opacity: 0.9; } 70%, 100% { transform: scale(3.2); opacity: 0; } }
-.dv-cursor { animation: dv-cursor 3.6s ease-in-out infinite; }
-@keyframes dv-cursor { 0% { transform: translate(40px, 86px); } 35% { transform: translate(120px, 40px); } 55% { transform: translate(120px, 66px); } 70% { transform: translate(118px, 68px); } 100% { transform: translate(40px, 86px); } }
-.dv-click { animation: dv-click 3.6s ease-out infinite; transform-origin: 118px 67px; transform-box: view-box; opacity: 0; }
-@keyframes dv-click { 0%, 54% { transform: scale(0.3); opacity: 0; } 56% { opacity: 0.9; } 78%, 100% { transform: scale(2.6); opacity: 0; } }
 
 /* High contrast option */
 html[data-contrast="true"] { --ink-soft: #0f172a; --glass: rgba(15, 23, 42, 0.62); --glass-border: #ffffff; }
@@ -504,38 +493,6 @@ html[data-contrast="true"] .bubble { border-width: 4px; }
 /* Full-screen views (camera, Facts, Hunt, board) cover the whole window on a computer,
    so their gradients and backgrounds are never cut off by the centered column. */
 html[data-device="desktop"] .bleed { position: fixed; }
-
-/* ---------- Phone-only fixes (computers are untouched) ---------- */
-/* Heavy effects make phones stutter: blur behind glass, a huge pulsing gradient, shadows on moving clouds. */
-html[data-device="phone"] .glass { backdrop-filter: none; -webkit-backdrop-filter: none; background: rgba(255, 255, 255, 0.3); }
-html[data-device="phone"] .sky::before { animation: none; inset: 0; }
-html[data-device="phone"] .drift { filter: none; will-change: transform; }
-html[data-device="phone"] .sq-slide,
-html[data-device="phone"] .sq-bob { will-change: transform; }
-html[data-device="phone"] .squiggles .sq-extra { display: none; }
-/* Long-press on photos and notes should not open the iOS save/copy menu or select text. */
-html[data-device="phone"] img,
-html[data-device="phone"] [data-note],
-html[data-device="phone"] .sticky { -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; }
-/* iOS zooms the page when a field's text is smaller than 16px. */
-html[data-device="phone"] input,
-html[data-device="phone"] select,
-html[data-device="phone"] textarea { font-size: max(16px, 1em); }
-/* Text links need a thumb-sized tap area (at least 44px tall). */
-html[data-device="phone"] button.underline { min-height: 44px; padding: 0 10px; }
-html[data-device="phone"] .icon-btn { min-width: 44px; min-height: 44px; }
-
-/* Short phones (small iPhones, older Androids): shrink the decorations so nothing collides. */
-@media (max-height: 720px) {
-  html[data-device="phone"] .hide-short { display: none; }
-  html[data-device="phone"] .home-nimbus svg { width: clamp(72px, 15dvh, 110px); height: auto; }
-  html[data-device="phone"] .device-art { width: clamp(56px, 11dvh, 90px); height: auto; }
-  html[data-device="phone"] .choose-nimbus svg { width: 76px; height: auto; }
-}
-html[data-device="phone"] .tap-start { background: #fff; color: var(--ink); border: 3px solid var(--ink); box-shadow: 0 5px 0 rgba(15, 23, 42, 0.3); backdrop-filter: none; }
-/* Settings pickers: the segmented buttons must be at least 44px tall for a thumb. */
-html[data-device="phone"] .seg button { min-height: 44px; padding-left: 10px; padding-right: 10px; }
-html[data-device="phone"] .toggle { transform: scale(1.1); transform-origin: right center; }
 
 /* ---------- Micro-animations ---------- */
 /* Main buttons breathe and get an occasional shine. */
@@ -609,20 +566,4 @@ html[data-device="desktop"] .sticky { animation: sway 5.5s ease-in-out infinite;
 .glint { animation: glint 3s ease-in-out infinite; }
 @keyframes glint { 0%, 80%, 100% { filter: brightness(1); } 90% { filter: brightness(1.35); } }
 
-/* Very short phones: the visible area can be as small as 320 x 416 once the browser bars are counted. */
-@media (max-height: 520px) {
-  html[data-device="phone"] .hide-short { display: none; }
-  html[data-device="phone"] .home-nimbus svg { width: 64px; height: auto; }
-  html[data-device="phone"] .choose-nimbus svg { width: 56px; height: auto; }
-  html[data-device="phone"] .levelup-nimbus svg { width: 96px; height: auto; }
-  html[data-device="phone"] .levelup-badge { width: 84px; height: 84px; }
-  html[data-device="phone"] .tutorial-nimbus svg { width: 84px; height: auto; }
-  html[data-device="phone"] .btn3d { min-height: 46px; }
-}
-
-/* Hunt HUD sizes: smaller on narrow or short phones so the stacked rows never collide. */
 :root { --ring: 64px; }
-@media (max-width: 400px), (max-height: 560px) {
-  html[data-device="phone"] { --ring: 52px; }
-  html[data-device="phone"] .cam-corner { display: none; }
-}

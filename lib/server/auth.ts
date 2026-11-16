@@ -20,7 +20,7 @@ export async function checkPassword(password: string, rec: UserRecord): Promise<
   return got.length === want.length && timingSafeEqual(got, want);
 }
 
-/** Adds a new sign-in session (one per phone, newest 6 kept) and returns the secret token for it. */
+/** Adds a new sign-in session (one per computer, newest 6 kept) and returns the secret token for it. */
 export function addSession(rec: UserRecord): string {
   const token = `${randomBytes(24).toString("hex")}`;
   rec.sessions = [...(rec.sessions ?? []), sha(token)].slice(-6);

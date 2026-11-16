@@ -94,7 +94,6 @@ const clean = <T,>(v: T): T => JSON.parse(JSON.stringify(v ?? null));
 
 function toMain(s: State, deleted: string[]): SyncMain {
   const settings: Record<string, unknown> = { ...s.settings };
-  delete settings.device; // phone vs computer layout stays on each device
   return {
     v: 1,
     xp: s.xp,
@@ -152,7 +151,7 @@ async function pushAll() {
     if (deleted.delete(n.id)) lastMainJson = ""; // a restored note is no longer deleted
   }
 
-  // notes removed on this phone
+  // notes removed on this computer
   const present = new Set(s.notes.map((n) => n.id));
   for (const id of [...lastNote.keys()]) {
     if (present.has(id)) continue;
@@ -195,7 +194,7 @@ function schedule() {
   }, 2500);
 }
 
-/** Download the cloud copy, merge it with this phone, and upload whatever is newer here. */
+/** Download the cloud copy, merge it with this computer, and upload whatever is newer here. */
 async function pullAndMerge(): Promise<{ restored: number }> {
   if (!uid) return { restored: 0 };
   const { db, f } = await fb();
@@ -233,7 +232,7 @@ async function pullAndMerge(): Promise<{ restored: number }> {
   update((s) => ({
     ...s,
     ...fromMain(merged),
-    settings: { ...s.settings, ...merged.settings, device: s.settings.device },
+    settings: { ...s.settings, ...merged.settings },
     notes: nm.notes,
   }));
   lastNote.clear();
@@ -296,7 +295,7 @@ export function cloudWasUsed(): boolean {
   }
 }
 
-/** Call once at app start. Only loads Firebase if this phone has signed in before. */
+/** Call once at app start. Only loads Firebase if this computer has signed in before. */
 export async function initCloud() {
   if (!cloudWasUsed()) {
     setCloud({ status: "signedOut" });

@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { Camera as CameraIcon, Home as HomeIcon, StickyNote } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { api, ApiError, Detected } from "@/lib/client/api";
-import { haptic, sfx } from "@/lib/client/audio";
+import { sfx } from "@/lib/client/audio";
 import { shrinkDataUrl } from "@/lib/client/image";
 import { setPendingNote } from "@/lib/client/nav";
 import { ANALYZE_LINES, shuffle, shuffleQuiz } from "@/lib/client/random";
@@ -195,8 +195,8 @@ export function Facts() {
 // ---------- Tutorial ----------
 const STEPS = [
   { mood: "happy" as const, text: "Hi, I'm Nimbus! Show me something ordinary and I'll make it extraordinary. Instead of scrolling, snap any everyday object." },
-  { mood: "wow" as const, text: "Point your camera at ONE object, then tap the big white button." },
-  { mood: "think" as const, text: "If I see a few things, I'll outline them. Just tap the one you mean!" },
+  { mood: "wow" as const, text: "Point your camera at ONE object, then click the big white button." },
+  { mood: "think" as const, text: "If I see a few things, I'll outline them. Just click the one you mean!" },
   { mood: "happy" as const, text: "Every object you learn about becomes a sticky note on your Bulletin Board. Ready?" },
 ];
 
@@ -302,7 +302,7 @@ export function Choose({
   objects,
   onPick,
   onRetake,
-  prompt = "I see a few things! Tap the one you want to learn about.",
+  prompt = "I see a few things! Click the one you want to learn about.",
   retakeLabel = "Retake photo",
   autoLabel,
   onAuto,
@@ -425,7 +425,6 @@ function ResultView({ r, onAgain, onHome, onBoard, onCorrect, onSaved }: { r: Re
       tl.to(c, { opacity: 1, y: 0, scale: 1, rotation: 0, duration: 0.6, ease: "elastic.out(1, 0.55)" }, times[i]);
       tl.call(() => {
         sfx("pop", 1 + i * 0.07);
-        haptic(8);
         c.scrollIntoView({ behavior: "smooth", block: "nearest" });
       }, [], times[i]);
     });
@@ -613,13 +612,11 @@ function Quiz({ quiz, pick, onPick }: { quiz: NonNullable<Result["quiz"]>; pick:
     onPick(i);
     if (i === quiz.answer) {
       sfx("chime");
-      haptic([20, 40, 20]);
       confetti(0.6, 40);
       addXp(15);
       toast("Correct! +15 brain points");
     } else {
       sfx("buzz");
-      haptic(60);
     }
   };
   return (
@@ -659,7 +656,6 @@ function PinFly({ title, color, target, onDone }: { title: string; color: number
       .fromTo(pin.current, { y: -140, opacity: 0, scale: 1.6 }, { y: 0, opacity: 1, scale: 1, duration: 0.45, ease: "bounce.out" })
       .call(() => {
         sfx("thunk");
-        haptic(30);
       }, [], "-=0.32")
       .to(n, { rotation: 3, duration: 0.15, ease: "sine.inOut", yoyo: true, repeat: 3 }, "-=0.2")
       .to(label.current, { opacity: 0, duration: 0.2 }, "+=0.35")

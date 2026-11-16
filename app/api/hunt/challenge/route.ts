@@ -16,7 +16,7 @@ export async function POST(req: NextRequest) {
     const used = (Array.isArray(body.used) ? body.used : []).map(String).slice(-30);
     const out = await geminiJSON<{ challenge?: string }>({
       model: MODEL_FAST,
-      system: `You write scavenger-hunt challenges for a phone game played indoors at home, school or an event.
+      system: `You write scavenger-hunt challenges for a game played on a computer indoors at home, school or an event.
 Return JSON only: {"challenge": string}
 - The challenge must be findable in a typical home, classroom or office within a minute.
 - Phrase it as "Find ..." in under 10 words. No emojis.

@@ -39,7 +39,6 @@ export function Home() {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   })();
   const streakDoneToday = streakData.last === todayKey;
-  const desktop = useStore((s) => s.settings.device) === "desktop";
   const [compliment, setCompliment] = useState<string | null>(cachedCompliment);
   const root = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLParagraphElement>(null);
@@ -99,7 +98,7 @@ export function Home() {
         <div className="relative shrink-0">
           <button
             aria-describedby="streak-tip"
-            aria-label={`${streak} day streak. Tap for details`}
+            aria-label={`${streak} day streak. Click for details`}
             onMouseEnter={() => setTip(true)}
             onMouseLeave={() => setTip(false)}
             onFocus={() => setTip(true)}
@@ -135,7 +134,7 @@ export function Home() {
 
       {/* logo + motto */}
       <div data-in className="flex shrink-0 flex-col items-center" style={{ marginTop: "clamp(8px, 3dvh, 32px)" }}>
-        <Logo size={desktop ? "clamp(4.4rem, 8vw, 6.4rem)" : "clamp(3rem, min(19.5vw, 10.5dvh), 6.2rem)"} />
+        <Logo size={"clamp(4.4rem, 8vw, 6.4rem)"} />
         <p className="mt-2 text-center text-[clamp(0.85rem,3.7vw,1.15rem)] leading-snug font-bold opacity-95">Learn something extraordinary about the ordinary.</p>
         <p className="glass hide-short mt-2 rounded-full px-3 py-1 text-center text-[clamp(0.72rem,3.2vw,0.85rem)] font-bold">Swap your next scroll for a snap.</p>
       </div>
@@ -167,36 +166,36 @@ export function Home() {
         </div>
       </div>
 
-      {/* main buttons: stacked on a phone, three tall tiles in a row on a computer */}
-      <div className={desktop ? "mx-auto grid w-full max-w-3xl shrink-0 grid-cols-3 gap-4" : "mx-auto flex w-full max-w-md shrink-0 flex-col"} style={desktop ? undefined : { gap: "clamp(10px, 1.8dvh, 18px)" }}>
+      {/* main buttons: three tall tiles in a row */}
+      <div className="mx-auto grid w-full max-w-3xl shrink-0 grid-cols-3 gap-4">
         <div data-in>
           <Btn
             variant="green"
-            className={desktop ? "idle flex-col !gap-3 text-[1.5rem]" : "idle text-[clamp(1.3rem,5.7vw,1.65rem)]"}
-            style={{ height: desktop ? "clamp(108px, 17dvh, 150px)" : "clamp(62px, 9.6dvh, 84px)", animationDelay: "0s" }}
+            className="idle flex-col !gap-3 text-[1.5rem]"
+            style={{ height: "clamp(108px, 17dvh, 150px)", animationDelay: "0s" }}
             onClick={() => go("facts")}
           >
-            <Camera size={desktop ? 44 : 28} strokeWidth={2.8} /> Facts
+            <Camera size={44} strokeWidth={2.8} /> Facts
           </Btn>
         </div>
         <div data-in>
           <Btn
             variant="red"
-            className={desktop ? "idle flex-col !gap-3 text-[1.5rem]" : "idle text-[clamp(1.3rem,5.7vw,1.65rem)]"}
-            style={{ height: desktop ? "clamp(108px, 17dvh, 150px)" : "clamp(62px, 9.6dvh, 84px)", animationDelay: "1.1s" }}
+            className="idle flex-col !gap-3 text-[1.5rem]"
+            style={{ height: "clamp(108px, 17dvh, 150px)", animationDelay: "1.1s" }}
             onClick={() => go("hunt")}
           >
-            <Search size={desktop ? 44 : 28} strokeWidth={2.8} /> Hunt
+            <Search size={44} strokeWidth={2.8} /> Hunt
           </Btn>
         </div>
         <div data-in>
           <Btn
             variant="brown"
-            className={desktop ? "idle flex-col !gap-3 text-[1.5rem]" : "idle text-[clamp(1.15rem,5vw,1.4rem)]"}
-            style={{ height: desktop ? "clamp(108px, 17dvh, 150px)" : "clamp(54px, 7.8dvh, 70px)", animationDelay: "2.2s" }}
+            className="idle flex-col !gap-3 text-[1.5rem]"
+            style={{ height: "clamp(108px, 17dvh, 150px)", animationDelay: "2.2s" }}
             onClick={() => go("board")}
           >
-            <StickyNote size={desktop ? 44 : 28} strokeWidth={2.8} /> Bulletin Board
+            <StickyNote size={44} strokeWidth={2.8} /> Bulletin Board
           </Btn>
         </div>
       </div>

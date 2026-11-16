@@ -1,8 +1,8 @@
 "use client";
 import gsap from "gsap";
-import { ArrowLeft, Check, ImageIcon, RefreshCw, RotateCcw } from "lucide-react";
+import { ArrowLeft, Check, ImageIcon, RotateCcw } from "lucide-react";
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
-import { haptic, sfx } from "@/lib/client/audio";
+import { sfx } from "@/lib/client/audio";
 import { fileToDataUrl, videoToDataUrl } from "@/lib/client/image";
 import { getState, update, useStore } from "@/lib/client/store";
 import { Nimbus } from "./art";
@@ -30,15 +30,11 @@ export function Camera({
 }) {
   const explained = useStore((s) => s.cameraExplained);
   const [state, setState] = useState<CamState>(explained ? "starting" : "explain");
-  const [facing, setFacing] = useState<"environment" | "user">("environment");
   const [preview, setPreview] = useState<string | null>(null);
   const video = useRef<HTMLVideoElement>(null);
   const flash = useRef<HTMLDivElement>(null);
   const stream = useRef<MediaStream | null>(null);
   const fileInput = useRef<HTMLInputElement>(null);
-  const nativeInput = useRef<HTMLInputElement>(null);
-  // Phones and tablets: the capture input opens the real camera app. Desktops ignore it.
-  const [isPhone] = useState(() => typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches);
 
   const stop = () => {
     stream.current?.getTracks().forEach((t) => t.stop());
@@ -53,7 +49,7 @@ export function Camera({
     stop();
     try {
       const s = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: { ideal: facing }, width: { ideal: 1920 }, height: { ideal: 1080 } },
+        video: { width: { ideal: 1920 }, height: { ideal: 1080 } },
         audio: false,
       });
       stream.current = s;
@@ -72,7 +68,7 @@ export function Camera({
             : "unsupported",
       );
     }
-  }, [facing]);
+  }, []);
 
   // The camera is an external system; starting it updates state when it answers.
   useEffect(() => {
@@ -83,9 +79,8 @@ export function Camera({
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     if (state === "live") start();
-    // restart when the facing camera changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [facing]);
+  }, []);
 
   useEffect(() => stop, []);
 
@@ -100,7 +95,6 @@ export function Camera({
   const shoot = () => {
     if (!video.current || disabled) return;
     sfx("shutter");
-    haptic(25);
     gsap.fromTo(flash.current, { opacity: 0.95 }, { opacity: 0, duration: 0.45, ease: "power2.out" });
     deliver(videoToDataUrl(video.current));
   };
@@ -127,7 +121,7 @@ export function Camera({
         muted
         autoPlay
         className="absolute inset-0 h-full w-full object-cover"
-        style={{ transform: facing === "user" ? "scaleX(-1)" : undefined }}
+       
       />
       <div className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-gradient-to-b from-black/60 to-transparent" />
       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-56 bg-gradient-to-t from-black/70 to-transparent" />
@@ -168,9 +162,7 @@ export function Camera({
           <button aria-label="Take picture" className="shutter" onClick={shoot} disabled={disabled}>
             <span />
           </button>
-          <IconBtn label="Flip camera" onClick={() => setFacing((f) => (f === "environment" ? "user" : "environment"))}>
-            <RefreshCw size={22} strokeWidth={2.6} />
-          </IconBtn>
+          <span className="w-12" aria-hidden />
         </div>
       )}
 
@@ -203,12 +195,10 @@ export function Camera({
             </h2>
             <p className="mt-2 text-[0.95rem] text-[var(--ink-soft)]">
               {state === "explain"
-                ? "Know it uses your camera to spot objects. Photos stay on your phone, except the one I look at."
+                ? "Know it uses your camera to spot objects. Photos stay on your computer, except the one I look at."
                 : state === "blocked"
-                  ? "Your browser said no to the camera. Allow camera access in your browser settings, then tap Try again."
-                  : isPhone
-                    ? "I couldn't open a live camera in the app, but your phone's camera app still works."
-                    : "This device has no camera I can use. Connect one and tap Try again, or pick a photo from your files."}
+                  ? "Your browser said no to the camera. Allow camera access in your browser settings, then click Try again."
+                  : "This computer has no camera I can use. Connect one and click Try again, or pick a photo from your files."}
             </p>
             <div className="mt-5 flex flex-col gap-3">
               {state === "explain" && (
@@ -221,13 +211,8 @@ export function Camera({
                   Try again
                 </Btn>
               )}
-              {state !== "explain" && isPhone && (
-                <Btn variant="sun" className="h-[50px]" onClick={() => nativeInput.current?.click()}>
-                  Open phone camera
-                </Btn>
-              )}
               <Btn variant="white" className="h-[50px]" onClick={() => fileInput.current?.click()}>
-                {isPhone ? "Pick from photos" : "Pick a photo from files"}
+                Pick a photo from files
               </Btn>
               <button className="mx-auto min-h-[44px] px-4 text-sm font-extrabold underline" onClick={onBack}>
                 {state === "explain" ? "Not now, go back" : "Go back"}
@@ -240,7 +225,6 @@ export function Camera({
 
       <div ref={flash} className="pointer-events-none absolute inset-0 z-30 bg-white opacity-0" />
       <input ref={fileInput} type="file" accept="image/*" className="hidden" onChange={onFile} />
-      <input ref={nativeInput} type="file" accept="image/*" capture="environment" className="hidden" onChange={onFile} />
     </div>
   );
 }

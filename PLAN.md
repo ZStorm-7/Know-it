@@ -1,6 +1,6 @@
 # Know it: agreed spec
 
-Theme: Elevate the Ordinary. Mobile-only installable PWA (Next.js). Motto: "Learn something extraordinary about the ordinary." Scrolling line: "Swap your next scroll for a snap."
+Theme: Elevate the Ordinary. Desktop-only web app, installable from the browser (Next.js). Motto: "Learn something extraordinary about the ordinary." Scrolling line: "Swap your next scroll for a snap."
 
 ## AI
 - Gemini via the OpenAI-compatible endpoint `https://generativelanguage.googleapis.com/v1beta/openai/chat/completions` (Bearer auth).
@@ -13,26 +13,26 @@ Theme: Elevate the Ordinary. Mobile-only installable PWA (Next.js). Motto: "Lear
 - Fonts: Shrikhand (logo, titles, big numbers), Sour Gummy (UI/body), Caveat (sticky-note handwriting).
 - No emojis: custom SVG assets (Nimbus the cloud mascot, pushpin, brain, sticky notes, cork) plus one rounded icon set.
 - GSAP + React Bits style micro-animations everywhere. Light (day sky) and dark (night sky with stars) themes.
-- Sizes adapt to screen height (clamp/dvh) and respect safe areas.
+- Sizes adapt to screen height (clamp/dvh) for desktop windows.
 - Badge: "Built with Claude Code · AI by Gemini".
 
 ## Screens
-1. Splash: cloud loader animation, "Know it" pops in, "Tap to start" (unlocks audio).
+1. Splash: cloud loader animation, "Know it" pops in, "Click to start" (unlocks audio).
 2. Cloud transition between every screen: clouds rise to cover, screen swaps, clouds keep rising to reveal.
 3. Home: logo, chat bubble from Nimbus with an AI compliment (fallback list if slow), brain level bar, motto, buttons Facts / Hunt Mode / Bulletin Board, settings gear, badge.
 4. Facts: first-visit tutorial in a fun text box (Next/Skip, replayable). Camera-permission explainer, styled live viewfinder, shutter + flash, retake/use, upload fallback.
    - Loading: cloud-fill animation over blurred photo, rotating funny lines, Cancel.
-   - If unsure, AI outlines 2–3 candidates and the user taps one.
+   - If unsure, AI outlines 2–3 candidates and the user clicks one.
    - Result: outline draws around the object, name, 5–10 unique facts (never repeats facts already seen for that object). Reveal pacing slow→fast→slow with rising-pitch pops and bounce. XP count-up, one quiz question. Small "AI confidence ~N%" and "This is AI and some facts may be incorrect."
-   - Then a sticky note with the AI nickname (handwriting) is pinned to the Bulletin Board (pin-drop placing animation). Tapping a note shows its photo and facts.
+   - Then a sticky note with the AI nickname (handwriting) is pinned to the Bulletin Board (pin-drop placing animation). Clicking a note shows its photo and facts.
    - Buttons: Main Menu / Take Another Picture.
 5. Hunt: 3 lives, timer pauses while the AI checks. `time = max(15, round(60 * 0.92^(round-1)))`. Difficulty: broad traits → materials/categories → specific objects → combinations. Game over shows score, best score, what the AI saw. Hunt photos do NOT go on the board.
-6. Bulletin Board (Milanote-style): pinch zoom, pan, tap to lift + toolbar (Rename, View facts, Unpin), double-tap note to open facts, long-press drag to move, drag-to-trash zone, Undo toast, fit-all button, double-tap cork to toggle zoom. Positions saved on device.
-7. Settings: theme, music volume, SFX toggle, vibration, reduce motion, text size, fact style (kid/normal/nerdy), Hunt starting difficulty, replay tutorial, reset progress, credits. No mute button elsewhere.
+6. Bulletin Board (Milanote-style): scroll-wheel zoom, drag to pan, click to lift + toolbar (Rename, View facts, Unpin), double-click note to open facts, drag to move, drag-to-trash zone, Undo toast, fit-all button, double-click cork to toggle zoom. Positions saved on device.
+7. Settings: theme, music volume, SFX toggle, reduce motion, text size, fact style (kid/normal/nerdy), Hunt starting difficulty, replay tutorial, reset progress, credits. No mute button elsewhere.
 
 ## Music (Storyblocks, loop per place, crossfade)
 - Home: Via Portugal
 - Facts: Joyful Ride
-- Hunt: Comedy Background Detective Cartoon
+- Hunt: Courage
 - Bulletin Board: Fresh Story
 (Check the Storyblocks license allows embedding in a public app.)

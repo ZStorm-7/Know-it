@@ -130,7 +130,7 @@ export async function makeShareCard(note: Note, detail: NoteDetail): Promise<Blo
   return new Promise((res, rej) => c.toBlob((b) => (b ? res(b) : rej(new Error("no image"))), "image/png"));
 }
 
-/** Shares the card through the phone's share sheet, or downloads it where sharing isn't available. */
+/** Shares the card through the share dialog, or downloads it where sharing isn't available. */
 export async function shareNote(note: Note, detail: NoteDetail): Promise<"shared" | "downloaded" | "cancelled"> {
   const blob = await makeShareCard(note, detail);
   const file = new File([blob], `know-it-${note.title.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.png`, { type: "image/png" });
