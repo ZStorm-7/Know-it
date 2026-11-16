@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { MODEL_FAST, MODEL_SMART, readKeys } from "@/lib/server/gemini";
+import { describeKeys, MODEL_FAST, MODEL_SMART, readKeys } from "@/lib/server/gemini";
 
 // A quick health check for the AI: open /api/ai-status before a demo.
 // It sends one tiny request per configured key and per model, and never shows a key.
@@ -41,6 +41,7 @@ export async function GET() {
   const works = keyResults.some((r) => r[MODEL_SMART] === "ok" || r[MODEL_FAST] === "ok");
   const body = {
     ready: works,
+    setup: describeKeys(),
     backupKeyConfigured: keys.some((k) => k.label === "backup"),
     keys: keyResults,
     note: works

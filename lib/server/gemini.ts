@@ -58,6 +58,18 @@ export function readKeys(): { label: "primary" | "backup"; key: string }[] {
   return out;
 }
 
+/** For the status page: which Gemini-related variables the server can see (names only) and whether the backup differs from the primary. */
+export function describeKeys() {
+  const a = readEnv("GEMINI_API_KEY");
+  const b = readEnv("GEMINI_API_KEY_BACKUP");
+  return {
+    variableNamesSeen: Object.keys(process.env).filter((k) => /gemini/i.test(k)).map((k) => JSON.stringify(k)),
+    primarySet: !!a,
+    backupSet: !!b,
+    backupSameAsPrimary: !!a && a === b,
+  };
+}
+
 const otherModel = (m: string) => (m === MODEL_SMART ? MODEL_FAST : MODEL_SMART);
 
 /** Calls Gemini and returns parsed JSON. An unreadable answer is retried once before giving up. */
