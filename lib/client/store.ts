@@ -28,7 +28,7 @@ export type Note = {
   rot: number;
   color: number;
   createdAt: number;
-  /** Last time the note was changed (for cloud sync: the newest change wins). */
+  /** Last time the note was changed. */
   updatedAt?: number;
   fresh?: boolean;
 };
@@ -95,14 +95,6 @@ const DEFAULT: State = {
 let state: State = DEFAULT;
 let loaded = false;
 const listeners = new Set<() => void>();
-
-/** Lets the cloud sync watch for any change to the saved state. Returns an unsubscribe function. */
-export function subscribeStore(cb: () => void) {
-  listeners.add(cb);
-  return () => {
-    listeners.delete(cb);
-  };
-}
 
 function load() {
   if (loaded || typeof window === "undefined") return;
@@ -297,7 +289,7 @@ export function signOut() {
   update((s) => ({ ...s, profile: null, guest: true, lastRank: null }));
 }
 
-/** Saves a note's photo and facts on this device (used when notes arrive from the cloud). */
+/** Saves a note's photo and facts on this device. */
 export async function saveNoteDetail(id: string, detail: NoteDetail) {
   await set(`note:${id}`, detail);
 }

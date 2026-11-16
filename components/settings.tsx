@@ -3,7 +3,7 @@ import { ReactNode, useState } from "react";
 import { LANGUAGES } from "@/lib/client/languages";
 import { sfx } from "@/lib/client/audio";
 import { resetProgress, setSetting, Settings, update, useStore } from "@/lib/client/store";
-import { AccountSection, CloudSection } from "./account";
+import { AccountSection } from "./account";
 import { Btn, Sheet, toast } from "./ui";
 
 function Row({ label, sub, children }: { label: string; sub?: string; children: ReactNode }) {
@@ -64,7 +64,6 @@ export function SettingsSheet({ open, onClose }: { open: boolean; onClose: () =>
 
         <h3 className="mt-2 mb-2 text-lg font-extrabold">Account</h3>
         <AccountSection onClose={onClose} />
-        <CloudSection />
 
         <h3 className="mt-5 text-lg font-extrabold">Preferences</h3>
         <div className="divide-y-2 divide-slate-200 dark:divide-white/10">

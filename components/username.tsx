@@ -3,7 +3,6 @@ import gsap from "gsap";
 import { useEffect, useRef, useState } from "react";
 import { api, ApiError } from "@/lib/client/api";
 import { sfx } from "@/lib/client/audio";
-import { signInWithGoogle, useCloud } from "@/lib/client/cloud";
 import { chooseGuest, setProfile, useStore } from "@/lib/client/store";
 import { useNav } from "./app";
 import { CloudLoader, Nimbus, RankBadge } from "./art";
@@ -15,7 +14,6 @@ const PATTERN = /^[A-Za-z0-9_.-]{3,16}$/;
 export function UsernameScreen() {
   const { go } = useNav();
   const profile = useStore((s) => s.profile);
-  const cloud = useCloud();
   const root = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<"create" | "signin">("create");
   const [name, setName] = useState("");
@@ -29,7 +27,7 @@ export function UsernameScreen() {
     gsap.fromTo(root.current!.querySelectorAll("[data-in]"), { y: 40, opacity: 0, scale: 0.92 }, { y: 0, opacity: 1, scale: 1, duration: 0.65, stagger: 0.08, ease: "back.out(1.7)" });
   }, []);
 
-  // signing in with Google (cloud sync) can bring the account back too
+  // once an account exists (made or signed in), go to Home
   useEffect(() => {
     if (profile) go("home");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -159,13 +157,8 @@ export function UsernameScreen() {
             {forgot && (
               <div className="mt-2 rounded-xl bg-slate-100 p-3 text-left text-sm font-bold text-[var(--ink)]">
                 <p>
-                  Know it doesn&apos;t collect emails, so we can&apos;t send a reset link. If you turned on cloud sync with Google, sign in with Google here and your account comes back. Otherwise you can make a new account.
+                  Know it doesn&apos;t collect emails, so we can&apos;t send a reset link. If you can&apos;t remember your password, you can make a new account with a different username.
                 </p>
-                <div className="mt-2">
-                  <Btn variant="sun" className="h-[44px]" disabled={cloud.status === "syncing"} onClick={() => signInWithGoogle()}>
-                    {cloud.status === "syncing" ? "Signing in..." : "Sign in with Google"}
-                  </Btn>
-                </div>
               </div>
             )}
           </div>

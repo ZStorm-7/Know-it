@@ -2,7 +2,6 @@
 import { useEffect, useState } from "react";
 import { api } from "@/lib/client/api";
 import { sfx } from "@/lib/client/audio";
-import { signInWithGoogle, signOutCloud, syncNow, useCloud } from "@/lib/client/cloud";
 import { setProfile, signOut, useStore } from "@/lib/client/store";
 import { useNav } from "./app";
 import { RankBadge } from "./art";
@@ -196,67 +195,6 @@ export function AccountSection({ onClose }: { onClose: () => void }) {
             </Btn>
           </div>
         </div>
-      )}
-    </div>
-  );
-}
-
-function ago(t?: number) {
-  if (!t) return "never";
-  const s = Math.round((Date.now() - t) / 1000);
-  if (s < 10) return "just now";
-  if (s < 60) return `${s} seconds ago`;
-  const m = Math.round(s / 60);
-  return m < 60 ? `${m} ${m === 1 ? "minute" : "minutes"} ago` : `${Math.round(m / 60)} hours ago`;
-}
-
-/** Google sign-in and cloud sync: notes, XP, streak and settings follow you to any computer. */
-export function CloudSection() {
-  const c = useCloud();
-  const signedIn = c.status === "syncing" || c.status === "synced" || (c.status === "error" && !!c.email);
-  return (
-    <div className="mt-3 rounded-2xl border-[2.5px] border-[var(--ink)] p-4">
-      <div className="text-lg font-extrabold">Cloud sync</div>
-      {!signedIn ? (
-        <>
-          <p className="mt-1 text-sm text-[var(--ink-soft)]">
-            Sign in with Google to keep your notes, photos, XP and streak safe, and bring them to any computer.
-          </p>
-          <div className="mt-3">
-            <Btn variant="sun" className="h-[50px]" disabled={c.status === "syncing"} onClick={() => signInWithGoogle()}>
-              {c.status === "syncing" ? "Signing in..." : "Sign in with Google"}
-            </Btn>
-          </div>
-        </>
-      ) : (
-        <>
-          <p className="mt-1 text-sm font-bold">
-            Signed in as <span className="break-all">{c.email ?? "your Google account"}</span>
-          </p>
-          <p className="text-sm text-[var(--ink-soft)]">
-            {c.status === "syncing" ? "Syncing..." : c.status === "error" ? "Last sync had a problem." : `Last synced ${ago(c.lastSync)}.`} Changes save automatically.
-          </p>
-          <div className="mt-3 flex gap-3">
-            <Btn variant="white" className="h-[50px]" disabled={c.status === "syncing"} onClick={() => syncNow()}>
-              Sync now
-            </Btn>
-            <Btn
-              variant="white"
-              className="h-[50px]"
-              onClick={() => {
-                signOutCloud();
-                toast("Signed out of cloud sync. Your data stays on this computer.");
-              }}
-            >
-              Sign out
-            </Btn>
-          </div>
-        </>
-      )}
-      {c.error && (
-        <p role="alert" className="mt-3 rounded-xl border-2 border-[var(--ink)] bg-orange-100 px-3 py-2 text-sm font-bold text-[var(--ink)]">
-          {c.error}
-        </p>
       )}
     </div>
   );

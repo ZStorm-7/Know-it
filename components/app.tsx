@@ -1,7 +1,6 @@
 "use client";
 import { createContext, useCallback, useContext, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { armEarlyMusic, playMusic, preloadMusic, setMusicVolume, Track, unlockAudio } from "@/lib/client/audio";
-import { initCloud } from "@/lib/client/cloud";
 import { setPrevVisit } from "@/lib/client/nav";
 import { getState, levelInfo, needsUsername, update, useStore } from "@/lib/client/store";
 import { Board } from "./board";
@@ -67,11 +66,6 @@ export default function App() {
   // music starts on the first touch (or at once, where the browser allows it), not only on "Click to start"
   useEffect(() => {
     armEarlyMusic();
-  }, []);
-
-  // if this computer signed in to the cloud before, reconnect quietly at launch
-  useEffect(() => {
-    void initCloud();
   }, []);
 
   // level-up celebration: a full-screen animation over whatever screen the player is on
